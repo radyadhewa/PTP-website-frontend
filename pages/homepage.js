@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import Head from 'next/head';
 import styles from '@/styles/Home.module.css';
 import StreakCounter from '@/components/StreakCounter';
@@ -66,6 +67,7 @@ const SAMPLE_PASSAGES = [
 ];
 
 export default function Home() {
+  const router = useRouter();
   const [currentStreak, setCurrentStreak] = useState(0);
   const [bestStreak, setBestStreak] = useState(0);
   const [todayRead, setTodayRead] = useState(false);
@@ -203,15 +205,10 @@ export default function Home() {
     setFilteredPassages(SAMPLE_PASSAGES);
     setPassageIndex(0);
   };
-    if (confirm('Are you sure you want to reset your streak? This cannot be undone.')) {
-      localStorage.removeItem('readingData');
-      localStorage.removeItem('lastReadDate');
-      setCurrentStreak(0);
-      setBestStreak(0);
-      setTotalBooksRead(0);
-      setTodayRead(false);
-      alert('Streak reset. Start fresh today!');
-    }
+
+  const handleLogout = () => {
+    localStorage.removeItem('readingCurrentUser');
+    router.push('/');
   };
 
   return (
@@ -324,6 +321,14 @@ export default function Home() {
                 style={{ width: '100%', marginTop: '20px' }}
               >
                 🔄 Reset Progress
+              </button>
+
+              <button
+                className={`${styles.button} ${styles.secondaryButton}`}
+                onClick={handleLogout}
+                style={{ width: '100%', marginTop: '12px' }}
+              >
+                Sign Out
               </button>
             </>
           )}

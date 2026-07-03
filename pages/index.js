@@ -114,7 +114,7 @@ export default function LoginPage() {
       console.log('New account created:', normalizedEmail);
       
       setCurrentUserEmail(normalizedEmail);
-      router.push('/');
+      router.push('/homepage');
       return;
     }
 
@@ -126,7 +126,7 @@ export default function LoginPage() {
 
     console.log('Login successful for email:', normalizedEmail);
     setCurrentUserEmail(normalizedEmail);
-    router.push('/');
+    router.push('/homepage');
   };
 
   return (
