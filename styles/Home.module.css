@@ -285,3 +285,143 @@
     width: 100%;
   }
 }
+
+/* Preference Form Styles */
+.preferenceFormContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.preferenceForm {
+  background: white;
+  border-radius: 16px;
+  padding: 40px;
+  max-width: 600px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideIn 0.3s ease;
+}
+
+.preferenceTitle {
+  font-size: 1.8rem;
+  color: #333;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.preferenceSubtitle {
+  font-size: 1rem;
+  color: #666;
+  text-align: center;
+  margin-bottom: 30px;
+  line-height: 1.6;
+}
+
+.formSection {
+  margin-bottom: 30px;
+}
+
+.formLabel {
+  display: block;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.checkboxGroup {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  padding: 12px 15px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.checkboxLabel:hover {
+  border-color: #667eea;
+  background: #f8f9fa;
+}
+
+.checkbox {
+  width: 18px;
+  height: 18px;
+  margin-right: 12px;
+  cursor: pointer;
+  accent-color: #667eea;
+}
+
+.radioGroup {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.radioLabel {
+  display: flex;
+  align-items: center;
+  padding: 12px 15px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.radioLabel:hover {
+  border-color: #667eea;
+  background: #f8f9fa;
+}
+
+.radio {
+  width: 18px;
+  height: 18px;
+  margin-right: 12px;
+  cursor: pointer;
+  accent-color: #667eea;
+}
+
+.helpText {
+  font-size: 0.85rem;
+  color: #999;
+  margin-top: 8px;
+  font-style: italic;
+}
+
+.successMessage {
+  margin-top: 20px;
+  padding: 15px;
+  background: #e8f5e9;
+  border-left: 4px solid #4caf50;
+  border-radius: 4px;
+  color: #2e7d32;
+  font-weight: 500;
+  animation: slideIn 0.3s ease;
+}
+
+@media (max-width: 600px) {
+  .preferenceForm {
+    padding: 25px;
+  }
+
+  .preferenceTitle {
+    font-size: 1.4rem;
+  }
+
+  .formLabel {
+    font-size: 1rem;
+  }
+}
