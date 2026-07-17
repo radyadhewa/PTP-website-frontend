@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 import Head from 'next/head';
 import styles from '@/styles/Home.module.css';
 import StreakCounter from '@/components/StreakCounter';
@@ -211,6 +212,8 @@ export default function Home() {
     router.push('/');
   };
 
+  const canWrite = todayRead;
+
   return (
     <>
       <Head>
@@ -240,6 +243,21 @@ export default function Home() {
                 >
                   🎯 Change My Preferences
                 </button>
+              </div>
+
+              <div className={styles.pageNav}>
+                <Link href="/homepage" className={`${styles.pageNavLink} ${styles.pageNavLinkActive}`}>
+                  Reading
+                </Link>
+                {canWrite ? (
+                  <Link href="/writing" className={styles.pageNavLink}>
+                    Writing
+                  </Link>
+                ) : (
+                  <span className={`${styles.pageNavLink} ${styles.pageNavLinkDisabled}`}>
+                    Writing
+                  </span>
+                )}
               </div>
 
               <StreakCounter currentStreak={currentStreak} bestStreak={bestStreak} />
@@ -273,6 +291,13 @@ export default function Home() {
                     <p style={{ fontSize: '1.2rem', color: '#333', marginBottom: '15px' }}>
                       🎯 You're all set for today! Check back tomorrow to keep your streak alive.
                     </p>
+                    <button
+                      className={`${styles.button} ${styles.primaryButton}`}
+                      onClick={() => router.push('/writing')}
+                      style={{ width: '100%', maxWidth: '360px', margin: '0 auto' }}
+                    >
+                      ✍️ Continue to Writing
+                    </button>
                   </div>
                 )
               ) : (

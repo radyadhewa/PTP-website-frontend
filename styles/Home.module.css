@@ -12,6 +12,49 @@
   margin-bottom: 40px;
 }
 
+.pageNav {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 30px;
+}
+
+.pageNavLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 18px;
+  border-radius: 999px;
+  text-decoration: none;
+  color: #555;
+  background: #f3f5ff;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.pageNavLink:hover {
+  background: #e5e8ff;
+  color: #333;
+}
+
+.pageNavLinkActive {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.pageNavLinkDisabled {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: #f0f0f0;
+  color: #999;
+  font-weight: 600;
+  cursor: not-allowed;
+}
+
 .title {
   font-size: 2.5rem;
   color: #333;
@@ -68,6 +111,20 @@
   margin-bottom: 40px;
 }
 
+.writingSection {
+  margin-bottom: 40px;
+}
+
+.sectionHeader {
+  margin-bottom: 18px;
+}
+
+.sectionHint {
+  color: #666;
+  margin-top: 8px;
+  line-height: 1.6;
+}
+
 .readingLabel {
   font-size: 1.3rem;
   color: #333;
@@ -92,6 +149,73 @@
   justify-content: center;
   flex-wrap: wrap;
   margin-top: 20px;
+}
+
+.writingCard {
+  background: #f8f9fa;
+  border: 1px solid #e6eaf2;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.writingTextarea {
+  width: 100%;
+  border: 1px solid #d8dee9;
+  border-radius: 10px;
+  padding: 14px 16px;
+  font-size: 1rem;
+  line-height: 1.7;
+  min-height: 180px;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.writingTextarea:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+}
+
+.feedbackPanel {
+  margin-top: 20px;
+  background: linear-gradient(135deg, #f7f8ff 0%, #fdfdff 100%);
+  border: 1px solid #e7ebf7;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.feedbackTitle {
+  color: #333;
+  margin-bottom: 16px;
+}
+
+.feedbackGrid {
+  display: grid;
+  gap: 15px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  margin-bottom: 15px;
+}
+
+.feedbackCard {
+  background: white;
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04);
+}
+
+.feedbackHeading {
+  color: #4a4a4a;
+  margin-bottom: 10px;
+}
+
+.feedbackList {
+  padding-left: 18px;
+  color: #555;
+  line-height: 1.7;
+}
+
+.feedbackList li {
+  margin-bottom: 8px;
 }
 
 .button {
