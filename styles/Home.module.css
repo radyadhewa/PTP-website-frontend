@@ -158,16 +158,51 @@
   padding: 20px;
 }
 
-.writingTextarea {
+.sectionField {
+  margin-bottom: 22px;
+}
+
+.fieldLabel {
+  display: block;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.fieldHint {
+  color: #555;
+  margin-bottom: 12px;
+  line-height: 1.6;
+}
+
+.fieldTextarea {
   width: 100%;
   border: 1px solid #d8dee9;
   border-radius: 10px;
   padding: 14px 16px;
   font-size: 1rem;
   line-height: 1.7;
-  min-height: 180px;
+  min-height: 140px;
   resize: vertical;
   box-sizing: border-box;
+}
+
+.fieldTextarea:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+}
+
+.combinedPreview {
+  margin-top: 20px;
+  padding: 18px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid #d8dee9;
+  color: #444;
+  line-height: 1.8;
+  word-break: break-word;
 }
 
 .writingTextarea:focus {

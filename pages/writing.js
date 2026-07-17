@@ -54,7 +54,11 @@ const analyzeWriting = (draft) => {
 };
 
 export default function WritingPage() {
-  const [writingDraft, setWritingDraft] = useState('');
+  const [writingDraft, setWritingDraft] = useState({
+    introduction: '',
+    body: '',
+    conclusion: '',
+  });
   const [writingFeedback, setWritingFeedback] = useState(null);
   const [todayRead, setTodayRead] = useState(false);
 
@@ -65,15 +69,39 @@ export default function WritingPage() {
 
     const savedWritingDraft = localStorage.getItem('writingDraft');
     if (savedWritingDraft) {
-      setWritingDraft(savedWritingDraft);
+      try {
+        const parsedDraft = JSON.parse(savedWritingDraft);
+        setWritingDraft({
+          introduction: parsedDraft.introduction || '',
+          body: parsedDraft.body || '',
+          conclusion: parsedDraft.conclusion || '',
+        });
+      } catch (error) {
+        setWritingDraft({
+          introduction: savedWritingDraft,
+          body: '',
+          conclusion: '',
+        });
+      }
     }
   }, []);
 
+  const handleFieldChange = (section, value) => {
+    setWritingDraft((prev) => ({ ...prev, [section]: value }));
+  };
+
+  const getCombinedDraft = () => {
+    return [writingDraft.introduction, writingDraft.body, writingDraft.conclusion]
+      .map((text) => text.trim())
+      .filter(Boolean)
+      .join('\n\n');
+  };
+
   const handleWritingSubmit = (event) => {
     event.preventDefault();
-    const trimmedDraft = writingDraft.trim();
+    const combinedDraft = getCombinedDraft();
 
-    if (!trimmedDraft) {
+    if (!combinedDraft) {
       setWritingFeedback({
         weakPoints: ['Start typing a few sentences first so we can give you meaningful feedback.'],
         strengths: ['You are taking the first step by trying to write.'],
@@ -82,13 +110,13 @@ export default function WritingPage() {
       return;
     }
 
-    const feedback = analyzeWriting(trimmedDraft);
-    localStorage.setItem('writingDraft', trimmedDraft);
+    const feedback = analyzeWriting(combinedDraft);
+    localStorage.setItem('writingDraft', JSON.stringify(writingDraft));
     setWritingFeedback(feedback);
   };
 
   const handleClearWriting = () => {
-    setWritingDraft('');
+    setWritingDraft({ introduction: '', body: '', conclusion: '' });
     setWritingFeedback(null);
     localStorage.removeItem('writingDraft');
   };
@@ -140,13 +168,44 @@ export default function WritingPage() {
               </div>
 
               <form onSubmit={handleWritingSubmit} className={styles.writingCard}>
-                <textarea
-                  value={writingDraft}
-                  onChange={(event) => setWritingDraft(event.target.value)}
-                  className={styles.writingTextarea}
-                  rows={12}
-                  placeholder="Type your writing here..."
-                />
+                <div className={styles.sectionField}>
+                  <label htmlFor="intro" className={styles.fieldLabel}>Introduction</label>
+                  <p className={styles.fieldHint}>Set up the context and main idea. Describe what your writing will focus on and why it matters.</p>
+                  <textarea
+                    id="intro"
+                    value={writingDraft.introduction}
+                    onChange={(event) => handleFieldChange('introduction', event.target.value)}
+                    className={styles.fieldTextarea}
+                    rows={5}
+                    placeholder="Introduce the topic and main idea..."
+                  />
+                </div>
+
+                <div className={styles.sectionField}>
+                  <label htmlFor="body" className={styles.fieldLabel}>Middle / Body</label>
+                  <p className={styles.fieldHint}>Develop your main points with examples, details, or reasoning.</p>
+                  <textarea
+                    id="body"
+                    value={writingDraft.body}
+                    onChange={(event) => handleFieldChange('body', event.target.value)}
+                    className={styles.fieldTextarea}
+                    rows={8}
+                    placeholder="Expand on your ideas here..."
+                  />
+                </div>
+
+                <div className={styles.sectionField}>
+                  <label htmlFor="conclusion" className={styles.fieldLabel}>Conclusion</label>
+                  <p className={styles.fieldHint}>Summarize the key takeaway and leave the reader with a final thought.</p>
+                  <textarea
+                    id="conclusion"
+                    value={writingDraft.conclusion}
+                    onChange={(event) => handleFieldChange('conclusion', event.target.value)}
+                    className={styles.fieldTextarea}
+                    rows={5}
+                    placeholder="Wrap up with a strong conclusion..."
+                  />
+                </div>
 
                 <div className={styles.buttonGroup}>
                   <button type="submit" className={`${styles.button} ${styles.primaryButton}`}>
@@ -160,6 +219,13 @@ export default function WritingPage() {
                     Clear
                   </button>
                 </div>
+
+                {getCombinedDraft() && (
+                  <div className={styles.combinedPreview}>
+                    <h4 className={styles.feedbackHeading}>Combined Draft Preview</h4>
+                    <div>{getCombinedDraft()}</div>
+                  </div>
+                )}
               </form>
 
               {writingFeedback && (
