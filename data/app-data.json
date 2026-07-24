@@ -1,0 +1,64 @@
+{
+  "users": [
+    {
+      "email": "account@gmail.com",
+      "passwordHash": "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8",
+      "createdAt": "2026-07-24T09:35:34.585Z",
+      "preferences": {
+        "genres": [
+          "History & Culture",
+          "Nature & Environment"
+        ],
+        "difficulty": "Intermediate",
+        "passageLength": "medium",
+        "completedAt": "2026-07-24T09:36:13.291Z"
+      },
+      "readingData": {
+        "currentStreak": 1,
+        "bestStreak": 1,
+        "totalBooksRead": 1,
+        "lastReadDate": "Fri Jul 24 2026"
+      },
+      "writingDraft": {
+        "introduction": "",
+        "body": "",
+        "conclusion": ""
+      }
+    },
+    {
+      "email": "test@gmail.com",
+      "passwordHash": "9f735e0df9a1ddc702bf0a1a7b83033f9f7153a00c29de82cedadc9957289b05",
+      "createdAt": "2026-07-24T09:47:43.228Z",
+      "preferences": {
+        "genres": [
+          "Science & Technology",
+          "Nature & Environment"
+        ],
+        "difficulty": "Intermediate",
+        "passageLength": "medium",
+        "completedAt": "2026-07-24T09:47:49.647Z"
+      },
+      "readingData": {
+        "currentStreak": 0,
+        "bestStreak": 0,
+        "totalBooksRead": 0,
+        "lastReadDate": null
+      },
+      "writingDraft": {
+        "introduction": "",
+        "body": "",
+        "conclusion": ""
+      }
+    }
+  ],
+  "sessions": {
+    "c6cf5413-7617-4ef4-8e3d-b9d3d53483c0": {
+      "email": "account@gmail.com",
+      "createdAt": "2026-07-24T09:35:34.587Z"
+    },
+    "cb4fba49-9e76-47f1-a959-8707fa733d9e": {
+      "email": "test@gmail.com",
+      "createdAt": "2026-07-24T09:47:43.232Z"
+    }
+  }
+}

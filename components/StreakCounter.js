@@ -10,7 +10,7 @@ export default function StreakCounter({ currentStreak, bestStreak }) {
         </div>
         <div className={styles.streakLabel}>Current Streak</div>
       </div>
-      <div style={{ marginTop: '20px', opacity: 0.9 }}>
+      <div className={styles.streakMeta}>
         Best Streak: <strong>{bestStreak}</strong> days
       </div>
     </div>

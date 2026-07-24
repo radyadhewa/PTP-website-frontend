@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import Head from 'next/head';
@@ -7,65 +7,7 @@ import StreakCounter from '@/components/StreakCounter';
 import ReadingPassage from '@/components/ReadingPassage';
 import VisualizationModal from '@/components/VisualizationModal';
 import PreferenceForm from '@/components/PreferenceForm';
-
-// Sample passages with metadata for daily reading
-const SAMPLE_PASSAGES = [
-  {
-    text: "Technology has revolutionized the way we communicate, transforming simple text messages into rich multimedia conversations. The evolution from traditional mail to instant messaging represents one of humanity's most significant leaps in connectivity. Today, billions of people stay connected across continents, sharing ideas and building relationships that would have been impossible mere decades ago.",
-    genre: 'Science & Technology',
-    difficulty: 'Intermediate',
-    length: 'medium',
-  },
-  
-  {
-    text: "The ocean covers more than 70% of Earth's surface, yet we know less about it than we do about the surface of the moon. Marine life exhibits incredible diversity, with millions of species adapted to various depths and conditions. From bioluminescent creatures in the abyssal zone to magnificent coral ecosystems in shallow reefs, the ocean remains one of our planet's greatest frontiers.",
-    genre: 'Nature & Environment',
-    difficulty: 'Intermediate',
-    length: 'medium',
-  },
-  
-  {
-    text: "Reading is a fundamental skill that opens doors to knowledge and imagination. When we read, our brains engage in a complex process of decoding symbols and constructing meaning. This mental exercise strengthens neural connections, improves focus, and expands our understanding of the world around us.",
-    genre: 'Self-Improvement',
-    difficulty: 'Beginner',
-    length: 'short',
-  },
-  
-  {
-    text: "Climate change is one of the most pressing challenges of our time. Rising global temperatures affect weather patterns, sea levels, and ecosystems worldwide. Scientists agree that human activities, particularly the emission of greenhouse gases, are the primary cause of observed warming since the mid-20th century.",
-    genre: 'Nature & Environment',
-    difficulty: 'Advanced',
-    length: 'medium',
-  },
-  
-  {
-    text: "Artificial intelligence has transformed industries and daily life in remarkable ways. Machine learning algorithms power recommendation systems, autonomous vehicles, and medical diagnostics. As AI continues to evolve, questions about ethics, privacy, and human-AI collaboration become increasingly important.",
-    genre: 'Science & Technology',
-    difficulty: 'Advanced',
-    length: 'long',
-  },
-
-  {
-    text: "The ancient philosophers of Greece laid the foundation for Western thought. Figures like Socrates, Plato, and Aristotle revolutionized how we understand knowledge, truth, and human existence. Their contributions continue to shape education, science, and philosophy more than two thousand years later.",
-    genre: 'History & Culture',
-    difficulty: 'Intermediate',
-    length: 'medium',
-  },
-
-  {
-    text: "Exercise is one of the most effective ways to improve both physical and mental health. Regular physical activity strengthens the heart, improves circulation, and boosts the production of endorphins—the body's natural mood elevators. Just 30 minutes of moderate exercise daily can significantly enhance your overall wellbeing.",
-    genre: 'Health & Wellness',
-    difficulty: 'Beginner',
-    length: 'short',
-  },
-
-  {
-    text: "The psychology of habit formation reveals that our behaviors are often shaped by subtle environmental cues and reward systems. Understanding the habit loop—cue, routine, and reward—empowers us to build positive habits and break negative ones. This knowledge has revolutionized personal development and behavior change strategies.",
-    genre: 'Self-Improvement',
-    difficulty: 'Intermediate',
-    length: 'medium',
-  },
-];
+import { SAMPLE_PASSAGES } from '@/lib/passages';
 
 export default function Home() {
   const router = useRouter();
@@ -78,104 +20,82 @@ export default function Home() {
   const [userPreferences, setUserPreferences] = useState(null);
   const [filteredPassages, setFilteredPassages] = useState(SAMPLE_PASSAGES);
   const [preferencesSubmitted, setPreferencesSubmitted] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  // Load data from localStorage on mount
+  const loadProfile = useCallback(async () => {
+    const response = await fetch('/api/me');
+
+    if (!response.ok) {
+      router.replace('/');
+      return null;
+    }
+
+    const profile = await response.json();
+    setCurrentStreak(profile.readingData?.currentStreak || 0);
+    setBestStreak(profile.readingData?.bestStreak || 0);
+    setTotalBooksRead(profile.readingData?.totalBooksRead || 0);
+    setTodayRead(profile.readingData?.lastReadDate === new Date().toDateString());
+    setUserPreferences(profile.preferences);
+    setPreferencesSubmitted(Boolean(profile.preferences));
+    setFilteredPassages(profile.passages?.length ? profile.passages : SAMPLE_PASSAGES);
+    setLoading(false);
+    return profile;
+  }, [router]);
+
   useEffect(() => {
-    const savedData = localStorage.getItem('readingData');
-    if (savedData) {
-      const data = JSON.parse(savedData);
-      setCurrentStreak(data.currentStreak || 0);
-      setBestStreak(data.bestStreak || 0);
-      setTotalBooksRead(data.totalBooksRead || 0);
-      
-      // Check if already read today
-      const lastReadDate = data.lastReadDate;
-      const today = new Date().toDateString();
-      if (lastReadDate === today) {
-        setTodayRead(true);
-      }
-    }
-
-    // Load user preferences
-    const savedPreferences = localStorage.getItem('userPreferences');
-    if (savedPreferences) {
-      const prefs = JSON.parse(savedPreferences);
-      setUserPreferences(prefs);
-      setPreferencesSubmitted(true);
-      filterPassagesByPreferences(prefs);
-    }
-  }, []);
-
-  const filterPassagesByPreferences = (preferences) => {
-    const filtered = SAMPLE_PASSAGES.filter((passage) => {
-      const genreMatch = preferences.genres.includes(passage.genre);
-      const difficultyMatch = passage.difficulty === preferences.difficulty;
-      const lengthMatch = passage.length === preferences.passageLength;
-      
-      return genreMatch && difficultyMatch && lengthMatch;
-    });
-
-    // If no perfect matches, at least filter by genre and difficulty
-    if (filtered.length === 0) {
-      const partialFiltered = SAMPLE_PASSAGES.filter((passage) => {
-        const genreMatch = preferences.genres.includes(passage.genre);
-        const difficultyMatch = passage.difficulty === preferences.difficulty;
-        return genreMatch && difficultyMatch;
-      });
-      setFilteredPassages(partialFiltered.length > 0 ? partialFiltered : SAMPLE_PASSAGES);
-    } else {
-      setFilteredPassages(filtered);
-    }
-  };
+    loadProfile();
+  }, [loadProfile]);
 
   const handlePreferencesSubmit = (preferences) => {
     setUserPreferences(preferences);
     setPreferencesSubmitted(true);
-    filterPassagesByPreferences(preferences);
+    loadProfile();
   };
 
-  const handleReadComplete = () => {
+  const handleReadComplete = async () => {
     const today = new Date().toDateString();
-    const lastReadDate = localStorage.getItem('lastReadDate');
+    const currentLastReadDate = todayRead ? today : null;
 
     let newStreak = currentStreak;
     let newBest = bestStreak;
 
-    // Only increment if they haven't read today
-    if (lastReadDate !== today) {
-      // Check if streak continues (read yesterday)
+    if (currentLastReadDate !== today) {
       const yesterday = new Date(Date.now() - 86400000).toDateString();
-      if (lastReadDate === yesterday) {
+      const profile = await fetch('/api/me').then((response) => response.json());
+      const previousDate = profile.readingData?.lastReadDate;
+
+      if (previousDate === yesterday) {
         newStreak = currentStreak + 1;
-      } else if (!lastReadDate) {
-        // First time reading
+      } else if (!previousDate) {
         newStreak = 1;
       } else {
-        // Streak broken, start new
         newStreak = 1;
       }
 
-      // Update best streak
       if (newStreak > bestStreak) {
         newBest = newStreak;
       }
 
-      // Save data
       const data = {
         currentStreak: newStreak,
         bestStreak: newBest,
         totalBooksRead: totalBooksRead + 1,
         lastReadDate: today,
       };
-      localStorage.setItem('readingData', JSON.stringify(data));
-      localStorage.setItem('lastReadDate', today);
+
+      await fetch('/api/me', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ readingData: data }),
+      });
 
       setCurrentStreak(newStreak);
       setBestStreak(newBest);
       setTotalBooksRead(totalBooksRead + 1);
       setTodayRead(true);
 
-      // Show success message
       alert('🎉 Great job! You\'ve maintained your streak! Keep reading daily!');
     } else {
       alert('You\'ve already read today! Come back tomorrow to continue your streak.');
@@ -187,10 +107,15 @@ export default function Home() {
     setShowModal(false);
   };
 
-  const handleResetStreak = () => {
+  const handleResetStreak = async () => {
     if (confirm('Are you sure you want to reset your streak? This cannot be undone.')) {
-      localStorage.removeItem('readingData');
-      localStorage.removeItem('lastReadDate');
+      await fetch('/api/me', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ resetProgress: true }),
+      });
       setCurrentStreak(0);
       setBestStreak(0);
       setTotalBooksRead(0);
@@ -199,20 +124,30 @@ export default function Home() {
     }
   };
 
-  const handleChangePreferences = () => {
-    localStorage.removeItem('userPreferences');
+  const handleChangePreferences = async () => {
+    await fetch('/api/me', {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ preferences: null }),
+    });
     setUserPreferences(null);
     setPreferencesSubmitted(false);
     setFilteredPassages(SAMPLE_PASSAGES);
     setPassageIndex(0);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('readingCurrentUser');
+  const handleLogout = async () => {
+    await fetch('/api/auth/logout', { method: 'POST' });
     router.push('/');
   };
 
   const canWrite = todayRead;
+
+  if (loading) {
+    return null;
+  }
 
   return (
     <>
@@ -279,17 +214,9 @@ export default function Home() {
                     </button>
                   </>
                 ) : (
-                  <div
-                    style={{
-                      background: '#f0f7ff',
-                      padding: '30px',
-                      borderRadius: '8px',
-                      textAlign: 'center',
-                      marginBottom: '20px',
-                    }}
-                  >
+                  <div className={`${styles.noticeCard} ${styles.noticePositive}`}>
                     <p style={{ fontSize: '1.2rem', color: '#333', marginBottom: '15px' }}>
-                      🎯 You're all set for today! Check back tomorrow to keep your streak alive.
+                      🎯 You&apos;re all set for today! Check back tomorrow to keep your streak alive.
                     </p>
                     <button
                       className={`${styles.button} ${styles.primaryButton}`}
@@ -301,17 +228,9 @@ export default function Home() {
                   </div>
                 )
               ) : (
-                <div
-                  style={{
-                    background: '#ffe0e0',
-                    padding: '30px',
-                    borderRadius: '8px',
-                    textAlign: 'center',
-                    marginBottom: '20px',
-                  }}
-                >
+                <div className={`${styles.noticeCard} ${styles.noticeWarning}`}>
                   <p style={{ fontSize: '1.1rem', color: '#c41e3a', marginBottom: '15px' }}>
-                    😔 Sorry, we don't have passages that match all your preferences right now.
+                    😔 Sorry, we don&apos;t have passages that match all your preferences right now.
                   </p>
                   <p style={{ color: '#666', marginBottom: '15px' }}>
                     Try adjusting your difficulty level or passage length to see more options.

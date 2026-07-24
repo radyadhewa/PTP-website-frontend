@@ -8,13 +8,18 @@ html,
 body {
   max-width: 100%;
   overflow-x: hidden;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   min-height: 100vh;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.28) 0, transparent 30%),
+    radial-gradient(circle at 85% 15%, rgba(255, 210, 170, 0.18) 0, transparent 24%),
+    linear-gradient(135deg, #2742a5 0%, #58439c 48%, #8f4f74 100%);
+  font-family: var(--font-sans), 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  color: #1d2740;
 }
 
 code {
@@ -22,10 +27,20 @@ code {
     monospace;
 }
 
+a {
+  color: inherit;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
 main {
   min-height: 100vh;
   display: flex;
   justify-content: center;
-  align-items: center;
-  padding: 20px;
+  align-items: flex-start;
+  padding: 48px 20px 72px;
 }

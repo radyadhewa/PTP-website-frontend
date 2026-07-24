@@ -3,38 +3,6 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import styles from '@/styles/Home.module.css';
 
-const normalizeEmail = (email) => email.trim().toLowerCase();
-const hashPassword = (password) => btoa(password);
-
-const loadUsers = () => {
-  const raw = localStorage.getItem('readingUsers');
-  if (!raw) return [];
-  try {
-    const parsed = JSON.parse(raw);
-    // Ensure it's an array
-    if (!Array.isArray(parsed)) {
-      console.warn('readingUsers is not an array, resetting:', parsed);
-      return [];
-    }
-    return parsed || [];
-  } catch (error) {
-    console.error('Error parsing readingUsers from localStorage:', error, 'Raw value:', raw);
-    return [];
-  }
-};
-
-const saveUsers = (users) => {
-  try {
-    localStorage.setItem('readingUsers', JSON.stringify(users));
-  } catch (error) {
-    console.error('Error saving users to localStorage:', error);
-    alert('Error saving data. Please check your browser storage.');
-  }
-};
-
-const getCurrentUserEmail = () => localStorage.getItem('readingCurrentUser');
-const setCurrentUserEmail = (email) => localStorage.setItem('readingCurrentUser', email);
-
 export default function LoginPage() {
   const router = useRouter();
   const [mode, setMode] = useState('login');
@@ -45,87 +13,47 @@ export default function LoginPage() {
   const [showClearData, setShowClearData] = useState(false);
 
   useEffect(() => {
-    const currentUser = getCurrentUserEmail();
-    if (currentUser) {
-      router.replace('/');
-    }
+    fetch('/api/me').then((response) => {
+      if (response.ok) {
+        router.replace('/homepage');
+      }
+    });
   }, [router]);
 
   const handleClearStorageData = () => {
-    if (confirm('This will clear all stored account data. Are you sure?')) {
-      try {
-        localStorage.removeItem('readingUsers');
-        localStorage.removeItem('readingCurrentUser');
-        localStorage.removeItem('readingData');
-        localStorage.removeItem('userPreferences');
-        setShowClearData(false);
-        setError('');
-        setEmail('');
-        setPassword('');
-        setConfirmPassword('');
-        alert('All data has been cleared. You can now create a new account.');
-      } catch (err) {
-        console.error('Error clearing localStorage:', err);
-        alert('Error clearing data.');
-      }
-    }
+    setShowClearData(false);
+    setError('This app now uses the server for account data. Create a new account or sign in with an existing one.');
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     setError('');
 
-    const normalizedEmail = normalizeEmail(email);
-    console.log('Attempting to ' + mode + ' with email:', normalizedEmail);
-    
-    if (!normalizedEmail || !password) {
+    if (!email.trim() || !password) {
       setError('Please enter both email and password.');
       return;
     }
 
-    const users = loadUsers();
-    console.log('Current users in system:', users);
-    
-    const existing = users.find((user) => {
-      const userEmail = normalizeEmail(user.email);
-      return userEmail === normalizedEmail;
+    const endpoint = mode === 'login' ? '/api/auth/login' : '/api/auth/signup';
+    const payload = mode === 'login'
+      ? { email, password }
+      : { email, password, confirmPassword };
+
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
     });
 
-    if (mode === 'signup') {
-      if (existing) {
-        console.warn('Account already exists for email:', normalizedEmail);
-        setError('An account with that email already exists.');
-        return;
-      }
+    const result = await response.json().catch(() => ({}));
 
-      if (password !== confirmPassword) {
-        setError('Passwords do not match.');
-        return;
-      }
-
-      const newUser = {
-        email: normalizedEmail,
-        passwordHash: hashPassword(password),
-        createdAt: new Date().toISOString(),
-      };
-
-      const updatedUsers = [...users, newUser];
-      saveUsers(updatedUsers);
-      console.log('New account created:', normalizedEmail);
-      
-      setCurrentUserEmail(normalizedEmail);
-      router.push('/homepage');
+    if (!response.ok) {
+      setError(result.error || 'Unable to complete your request.');
       return;
     }
 
-    if (!existing || existing.passwordHash !== hashPassword(password)) {
-      console.warn('Login failed for email:', normalizedEmail);
-      setError('Incorrect email or password.');
-      return;
-    }
-
-    console.log('Login successful for email:', normalizedEmail);
-    setCurrentUserEmail(normalizedEmail);
     router.push('/homepage');
   };
 
@@ -136,8 +64,8 @@ export default function LoginPage() {
         <meta name="description" content="Log in or sign up to save your reading streak." />
       </Head>
 
-      <main>
-        <div className={styles.container} style={{ maxWidth: '520px', margin: '80px auto' }}>
+      <main className={styles.authPage}>
+        <div className={`${styles.container} ${styles.authContainer}`}>
           <div className={styles.authHeader}>
             <h1 className={styles.title}>{mode === 'login' ? 'Sign In' : 'Create Account'}</h1>
             <p className={styles.subtitle}>
@@ -221,13 +149,7 @@ export default function LoginPage() {
             )}
 
             {showClearData && (
-              <div style={{
-                marginTop: '16px',
-                padding: '12px',
-                background: '#ffe0e0',
-                borderRadius: '8px',
-                textAlign: 'center',
-              }}>
+              <div className={styles.warningPanel}>
                 <p style={{ color: '#c41e3a', fontSize: '0.9rem', marginBottom: '12px' }}>
                   ⚠️ This will erase all your data and preferences
                 </p>

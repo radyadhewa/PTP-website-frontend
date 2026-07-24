@@ -3,7 +3,7 @@ import styles from '@/styles/Home.module.css';
 export default function ReadingPassage({ passage, onVisualize, onReadComplete }) {
   return (
     <div className={styles.readingSection}>
-      <h2 className={styles.readingLabel}>Today's Reading</h2>
+      <h2 className={styles.readingLabel}>Today&apos;s Reading</h2>
       <div className={styles.passageCard}>
         <p>{passage}</p>
       </div>

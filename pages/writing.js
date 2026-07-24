@@ -61,29 +61,24 @@ export default function WritingPage() {
   });
   const [writingFeedback, setWritingFeedback] = useState(null);
   const [todayRead, setTodayRead] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const lastReadDate = localStorage.getItem('lastReadDate');
-    const today = new Date().toDateString();
-    setTodayRead(lastReadDate === today);
-
-    const savedWritingDraft = localStorage.getItem('writingDraft');
-    if (savedWritingDraft) {
-      try {
-        const parsedDraft = JSON.parse(savedWritingDraft);
-        setWritingDraft({
-          introduction: parsedDraft.introduction || '',
-          body: parsedDraft.body || '',
-          conclusion: parsedDraft.conclusion || '',
-        });
-      } catch (error) {
-        setWritingDraft({
-          introduction: savedWritingDraft,
-          body: '',
-          conclusion: '',
-        });
+    fetch('/api/me').then(async (response) => {
+      if (!response.ok) {
+        setLoading(false);
+        return;
       }
-    }
+
+      const profile = await response.json();
+      setTodayRead(profile.readingData?.lastReadDate === new Date().toDateString());
+      setWritingDraft({
+        introduction: profile.writingDraft?.introduction || '',
+        body: profile.writingDraft?.body || '',
+        conclusion: profile.writingDraft?.conclusion || '',
+      });
+      setLoading(false);
+    });
   }, []);
 
   const handleFieldChange = (section, value) => {
@@ -97,7 +92,7 @@ export default function WritingPage() {
       .join('\n\n');
   };
 
-  const handleWritingSubmit = (event) => {
+  const handleWritingSubmit = async (event) => {
     event.preventDefault();
     const combinedDraft = getCombinedDraft();
 
@@ -111,15 +106,37 @@ export default function WritingPage() {
     }
 
     const feedback = analyzeWriting(combinedDraft);
-    localStorage.setItem('writingDraft', JSON.stringify(writingDraft));
+    await fetch('/api/me', {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ writingDraft }),
+    });
     setWritingFeedback(feedback);
   };
 
-  const handleClearWriting = () => {
+  const handleClearWriting = async () => {
     setWritingDraft({ introduction: '', body: '', conclusion: '' });
     setWritingFeedback(null);
-    localStorage.removeItem('writingDraft');
+    await fetch('/api/me', {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        writingDraft: {
+          introduction: '',
+          body: '',
+          conclusion: '',
+        },
+      }),
+    });
   };
+
+  if (loading) {
+    return null;
+  }
 
   return (
     <>
@@ -150,7 +167,7 @@ export default function WritingPage() {
           </div>
 
           {!todayRead ? (
-            <div className={styles.writingCard} style={{ textAlign: 'center' }}>
+            <div className={`${styles.writingCard} ${styles.centeredCard}`}>
               <p style={{ fontSize: '1.1rem', color: '#555', marginBottom: '20px' }}>
                 You need to complete today&rsquo;s reading before using the writing page.
               </p>

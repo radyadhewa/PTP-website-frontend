@@ -55,7 +55,7 @@ export default function VisualizationModal({ isOpen, passage, onClose }) {
           <h3>💡 Understanding Tips</h3>
           <ul className={styles.keyPoints}>
             <li>Focus on the main idea of each sentence</li>
-            <li>Identify the subject and what's happening</li>
+            <li>Identify the subject and what&apos;s happening</li>
             <li>Look for cause and effect relationships</li>
             <li>Note any unfamiliar words for lookup</li>
           </ul>

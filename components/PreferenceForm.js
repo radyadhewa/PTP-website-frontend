@@ -21,6 +21,7 @@ export default function PreferenceForm({ onSubmit }) {
   const [difficulty, setDifficulty] = useState('Intermediate');
   const [passageLength, setPassageLength] = useState('medium');
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState('');
 
   const handleGenreChange = (genre) => {
     setSelectedGenres((prev) =>
@@ -30,13 +31,15 @@ export default function PreferenceForm({ onSubmit }) {
     );
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (selectedGenres.length === 0) {
-      alert('Please select at least one genre');
+      setError('Please select at least one genre.');
       return;
     }
+
+    setError('');
 
     const preferences = {
       genres: selectedGenres,
@@ -45,10 +48,21 @@ export default function PreferenceForm({ onSubmit }) {
       completedAt: new Date().toISOString(),
     };
 
-    localStorage.setItem('userPreferences', JSON.stringify(preferences));
-    setSubmitted(true);
+    const response = await fetch('/api/me', {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ preferences }),
+    });
 
-    // Call the onSubmit callback
+    if (!response.ok) {
+      const payload = await response.json().catch(() => ({}));
+      setError(payload.error || 'Unable to save your preferences right now.');
+      return;
+    }
+
+    setSubmitted(true);
     onSubmit(preferences);
   };
 
@@ -56,10 +70,10 @@ export default function PreferenceForm({ onSubmit }) {
     <div className={styles.preferenceFormContainer}>
       <div className={styles.preferenceForm}>
         <h2 className={styles.preferenceTitle}>
-          🎯 Let's Personalize Your Reading Experience
+          🎯 Let&apos;s Personalize Your Reading Experience
         </h2>
         <p className={styles.preferenceSubtitle}>
-          Tell us what you'd like to read about so we can tailor your content
+          Tell us what you&apos;d like to read about so we can tailor your content
         </p>
 
         <form onSubmit={handleSubmit}>
@@ -86,7 +100,7 @@ export default function PreferenceForm({ onSubmit }) {
           {/* Difficulty Level */}
           <div className={styles.formSection}>
             <label className={styles.formLabel}>
-              📖 What's your preferred reading difficulty level?
+              📖 What&apos;s your preferred reading difficulty level?
             </label>
             <div className={styles.radioGroup}>
               {DIFFICULTY_LEVELS.map((level) => (
@@ -156,11 +170,13 @@ export default function PreferenceForm({ onSubmit }) {
           <button type="submit" className={`${styles.button} ${styles.primaryButton}`}>
             ✨ Start Reading with My Preferences
           </button>
+
+          {error && <p className={styles.errorText}>{error}</p>}
         </form>
 
         {submitted && (
           <div className={styles.successMessage}>
-            ✅ Great! Your preferences have been saved. Let's get started!
+            ✅ Great! Your preferences have been saved. Let&apos;s get started!
           </div>
         )}
       </div>
