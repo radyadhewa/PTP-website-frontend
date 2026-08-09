@@ -27,27 +27,27 @@
     },
     {
       "email": "test@gmail.com",
-      "passwordHash": "9f735e0df9a1ddc702bf0a1a7b83033f9f7153a00c29de82cedadc9957289b05",
+      "passwordHash": "scrypt$16384$8$1$6ad8bee64177131f34aa35c4a0e22d74$ff8539359ab6baf8fb26848171e128a7fcd401809aadb61ff898c6591fc4e4946a0f1a0b970f494a78d07677654b010860ef56b34adaeb0b3a466398270b5637",
       "createdAt": "2026-07-24T09:47:43.228Z",
       "preferences": {
         "genres": [
           "Science & Technology",
-          "Nature & Environment"
+          "Self-Improvement"
         ],
-        "difficulty": "Intermediate",
-        "passageLength": "medium",
-        "completedAt": "2026-07-24T09:47:49.647Z"
+        "difficulty": "Beginner",
+        "passageLength": "short",
+        "completedAt": "2026-08-07T06:22:55.912Z"
       },
       "readingData": {
-        "currentStreak": 0,
-        "bestStreak": 0,
-        "totalBooksRead": 0,
-        "lastReadDate": null
+        "currentStreak": 1,
+        "bestStreak": 1,
+        "totalBooksRead": 1,
+        "lastReadDate": "Fri Aug 07 2026"
       },
       "writingDraft": {
-        "introduction": "",
-        "body": "",
-        "conclusion": ""
+        "introduction": "hi i am yoga",
+        "body": "who is me",
+        "conclusion": "what am i doing"
       }
     },
     {
@@ -84,17 +84,6 @@
       "email": "test@gmail.com",
       "createdAt": "2026-07-24T09:47:43.232Z"
     },
-    "07ee02d9-ca59-499d-a69b-3320bd2911b1": {
-      "email": "123@gmail.com",
-      "createdAt": "2026-08-08T12:13:43.586Z"
-    },
-    "cd6040c5-a3c7-40ea-bb33-d66d3d21947e": {
-      "email": "123@gmail.com",
-      "createdAt": "2026-08-09T02:47:42.902Z"
-    },
-    "b0dad8ae-575d-47a7-9e6e-065a73d46cc9": {
-      "email": "123@gmail.com",
-      "createdAt": "2026-08-09T14:05:06.675Z"
-    }
+
   }
 }

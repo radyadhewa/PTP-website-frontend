@@ -8,6 +8,10 @@
 # testing
 /coverage
 
+# local application data (contains private account/session data)
+/data/app-data.json
+/data/*.tmp
+
 # next.js
 /.next/
 /out/

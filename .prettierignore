@@ -1,0 +1,9 @@
+.next
+coverage
+node_modules
+data
+AGENTS.md
+README.md
+package-lock.json
+test-start.js
+test.txt
