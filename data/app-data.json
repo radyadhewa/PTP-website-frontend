@@ -49,6 +49,30 @@
         "body": "",
         "conclusion": ""
       }
+    },
+    {
+      "email": "123@gmail.com",
+      "passwordHash": "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3",
+      "createdAt": "2026-08-08T12:13:43.581Z",
+      "preferences": {
+        "genres": [
+          "Health & Wellness"
+        ],
+        "difficulty": "Intermediate",
+        "passageLength": "medium",
+        "completedAt": "2026-08-09T02:04:34.453Z"
+      },
+      "readingData": {
+        "currentStreak": 1,
+        "bestStreak": 1,
+        "totalBooksRead": 1,
+        "lastReadDate": "Sun Aug 09 2026"
+      },
+      "writingDraft": {
+        "introduction": "\nThere are dozens of new technologies that promise to change the future of education, but only few ask whether they strengthen the students’ minds or quietly replace their thinking capabilities. This question shaped Prompt To Print, an upcoming web application where students read and write with the guidance of an AI beside them. Unlike other typical AI that simply does the work for its users, the AI placed in Prompt To Print refuses to. Instead, it guides you, teaches you, and supports you through each step until you create something of your own. That is the essence of this project, and why I place it under Industry, Innovation, and Infrastructure (SDG 9). The goal is not just creating a new tool, but a responsible and trusted one.\n",
+        "body": "The problem runs in two directions. First, support for literacy is hard to come by. Only about 25% of fifteen year-olds in Indonesia reach a basic level of reading proficiency, down from 30% in 2018 (OECD, 2019, 2023). In 2025, the Education Minister stated it simply, roughly 75% of students can read, but they struggle to understand what they read (Tempo, 2025). Past the numbers are students who can decode words but cannot build an argument, verify a source, or structure their own writing, and who rarely receive help from tutors. Second, AI writing tools have increased. When misused, it’s easy to let the machine do the thinking while the students learn nothing.",
+        "conclusion": "Prompt To Print is designed around that tension. The AI acts as a coach instead of generating finished work. When the user is stuck, it asks guiding questions rather than giving answers. When they submit a writing draft, it highlights weak points and flimsy arguments and asks them to revise independently along with suggestions. It will not make a story or paragraph for the user, but it’ll show where and why their work is unclear and give ideas to progress forward. \n"
+      }
     }
   ],
   "sessions": {
@@ -59,6 +83,18 @@
     "cb4fba49-9e76-47f1-a959-8707fa733d9e": {
       "email": "test@gmail.com",
       "createdAt": "2026-07-24T09:47:43.232Z"
+    },
+    "07ee02d9-ca59-499d-a69b-3320bd2911b1": {
+      "email": "123@gmail.com",
+      "createdAt": "2026-08-08T12:13:43.586Z"
+    },
+    "cd6040c5-a3c7-40ea-bb33-d66d3d21947e": {
+      "email": "123@gmail.com",
+      "createdAt": "2026-08-09T02:47:42.902Z"
+    },
+    "b0dad8ae-575d-47a7-9e6e-065a73d46cc9": {
+      "email": "123@gmail.com",
+      "createdAt": "2026-08-09T14:05:06.675Z"
     }
   }
 }
