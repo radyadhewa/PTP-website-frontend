@@ -31,18 +31,19 @@
       "createdAt": "2026-07-24T09:47:43.228Z",
       "preferences": {
         "genres": [
-          "Science & Technology",
-          "Self-Improvement"
+          "Fiction & Literature",
+          "Self-Improvement",
+          "Science & Technology"
         ],
         "difficulty": "Beginner",
         "passageLength": "short",
-        "completedAt": "2026-08-07T06:22:55.912Z"
+        "completedAt": "2026-08-09T14:08:30.215Z"
       },
       "readingData": {
         "currentStreak": 1,
         "bestStreak": 1,
-        "totalBooksRead": 1,
-        "lastReadDate": "Fri Aug 07 2026"
+        "totalBooksRead": 2,
+        "lastReadDate": "Sun Aug 09 2026"
       },
       "writingDraft": {
         "introduction": "hi i am yoga",
