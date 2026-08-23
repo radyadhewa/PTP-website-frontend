@@ -2,6 +2,8 @@ import type { NextApiHandler, NextApiRequest, NextApiResponse } from 'next';
 import { createMocks } from 'node-mocks-http';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ApiError, assertMethod, withApiHandler } from '@/lib/api';
+import signupHandler from '@/pages/api/auth/signup';
+import * as dataStore from '@/lib/dataStore';
 
 function mocks(method?: string) {
   return createMocks<NextApiRequest, NextApiResponse>({ method });
@@ -97,6 +99,70 @@ describe('withApiHandler', () => {
     expect(res._getData()).toBe('already sent');
     expect(consoleError).toHaveBeenCalledWith(
       `[${requestId}] API request failed after headers were sent.`,
+    );
+  });
+});
+
+describe('signupHandler', () => {
+  it('creates a user account and sets session cookie for valid credentials', async () => {
+    vi.spyOn(dataStore, 'createUser').mockResolvedValue({
+      email: 'newuser@example.com',
+      passwordHash: 'hashed',
+      createdAt: new Date().toISOString(),
+      preferences: null,
+      readingData: { currentStreak: 0, bestStreak: 0, totalBooksRead: 0, lastReadDate: null },
+      writingDraft: { introduction: '', body: '', conclusion: '' },
+    });
+    vi.spyOn(dataStore, 'createSession').mockResolvedValue();
+
+    const { req, res } = mocks('POST');
+    req.body = {
+      email: 'newuser@example.com',
+      password: 'password123',
+      confirmPassword: 'password123',
+    };
+
+    await signupHandler(req, res);
+
+    expect(res.statusCode).toBe(201);
+    expect(res._getJSONData()).toEqual({ email: 'newuser@example.com' });
+    expect(res.getHeader('Set-Cookie')).toBeDefined();
+  });
+
+  it('rejects signup requests missing confirmPassword or with mismatched passwords', async () => {
+    const { req, res } = mocks('POST');
+    req.body = {
+      email: 'newuser@example.com',
+      password: 'password123',
+    };
+
+    await signupHandler(req, res);
+
+    expect(res.statusCode).toBe(400);
+    expect(res._getJSONData()).toEqual(
+      expect.objectContaining({
+        error: 'Password confirmation is required.',
+      }),
+    );
+  });
+
+  it('rejects signup when email already exists with a 409 ApiError', async () => {
+    vi.spyOn(dataStore, 'createUser').mockResolvedValue(null);
+
+    const { req, res } = mocks('POST');
+    req.body = {
+      email: 'existing@example.com',
+      password: 'password123',
+      confirmPassword: 'password123',
+    };
+
+    await signupHandler(req, res);
+
+    expect(res.statusCode).toBe(409);
+    expect(res._getJSONData()).toEqual(
+      expect.objectContaining({
+        error: 'An account with that email already exists.',
+      }),
     );
   });
 });
