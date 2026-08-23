@@ -3,8 +3,10 @@ import Link from 'next/link';
 import Head from 'next/head';
 import styles from '@/styles/Home.module.css';
 import StudyNavigation from '@/components/StudyNavigation';
-import { ApiError, errorMessage, getProfile, updateWriting } from '@/services/apiClient';
-import type { WritingDraft, WritingFeedback } from '@/types/domain';
+import VocabJarModal from '@/components/VocabJarModal';
+import { loadLocalJar, saveLocalJar } from '@/lib/vocabulary';
+import { ApiError, errorMessage, getProfile, updateJar, updateWriting } from '@/services/apiClient';
+import type { VocabularyItem, WritingDraft, WritingFeedback } from '@/types/domain';
 
 const EMPTY_DRAFT: WritingDraft = {
   introduction: '',
@@ -69,6 +71,8 @@ function analyzeWriting(draft: string): WritingFeedback {
 export default function WritingPage() {
   const [writingDraft, setWritingDraft] = useState<WritingDraft>(EMPTY_DRAFT);
   const [writingFeedback, setWritingFeedback] = useState<WritingFeedback | null>(null);
+  const [jar, setJar] = useState<VocabularyItem[]>([]);
+  const [showJarModal, setShowJarModal] = useState(false);
   const [todayRead, setTodayRead] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -82,7 +86,9 @@ export default function WritingPage() {
         const profile = await getProfile(controller.signal);
         setTodayRead(profile.readingData.lastReadDate === new Date().toDateString());
         setWritingDraft(profile.writingDraft);
+        setJar(profile.jar ?? loadLocalJar());
       } catch (profileError) {
+        setJar(loadLocalJar());
         if (profileError instanceof ApiError && profileError.aborted) return;
         setError(errorMessage(profileError, 'Unable to load your writing practice.'));
       } finally {
@@ -105,6 +111,44 @@ export default function WritingPage() {
 
   const handleFieldChange = (section: keyof WritingDraft, value: string): void => {
     setWritingDraft((previous) => ({ ...previous, [section]: value }));
+  };
+
+  const handleSaveJar = async (updatedJar: VocabularyItem[]) => {
+    setJar(updatedJar);
+    saveLocalJar(updatedJar);
+    try {
+      await updateJar(updatedJar);
+    } catch {
+      // Fallback local
+    }
+  };
+
+  const handleRemoveWord = (word: string) => {
+    const updated = jar.filter((item) => item.word.toLowerCase() !== word.toLowerCase());
+    void handleSaveJar(updated);
+  };
+
+  const handleToggleLearned = (word: string) => {
+    const updated = jar.map((item) =>
+      item.word.toLowerCase() === word.toLowerCase()
+        ? { ...item, learned: !item.learned }
+        : item,
+    );
+    void handleSaveJar(updated);
+  };
+
+  const handleUpdateNote = (word: string, note: string) => {
+    const updated = jar.map((item) =>
+      item.word.toLowerCase() === word.toLowerCase() ? { ...item, note } : item,
+    );
+    void handleSaveJar(updated);
+  };
+
+  const handleInsertToDraft = (word: string) => {
+    setWritingDraft((prev) => ({
+      ...prev,
+      body: prev.body ? `${prev.body} ${word}` : word,
+    }));
   };
 
   const handleWritingSubmit = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
@@ -210,9 +254,21 @@ export default function WritingPage() {
           ) : (
             <section className={styles.writingSection}>
               <div className={styles.sectionHeader}>
-                <p className={styles.eyebrow}>Your draft, your voice</p>
-                <h2 className={styles.readingLabel}>Give the idea a second life.</h2>
-                <p className={styles.sectionHint}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                  <div>
+                    <p className={styles.eyebrow}>Your draft, your voice</p>
+                    <h2 className={styles.readingLabel}>Give the idea a second life.</h2>
+                  </div>
+                  <button
+                    type="button"
+                    className={`${styles.button} ${styles.primaryButton}`}
+                    onClick={() => setShowJarModal(true)}
+                    style={{ minHeight: '38px', padding: '6px 16px' }}
+                  >
+                    🏺 Vocabulary Jar ({jar.length})
+                  </button>
+                </div>
+                <p className={styles.sectionHint} style={{ marginTop: '8px' }}>
                   Shape a beginning, build a middle, and leave one clear takeaway. The feedback is a
                   prompt for your next revision—not a grade.
                 </p>
@@ -338,6 +394,17 @@ export default function WritingPage() {
           )}
         </div>
       </main>
+
+      {showJarModal && (
+        <VocabJarModal
+          jar={jar}
+          onClose={() => setShowJarModal(false)}
+          onRemoveWord={handleRemoveWord}
+          onToggleLearned={handleToggleLearned}
+          onUpdateNote={handleUpdateNote}
+          onInsertToDraft={handleInsertToDraft}
+        />
+      )}
     </>
   );
 }

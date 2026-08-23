@@ -47,6 +47,32 @@ export interface WritingFeedback {
   suggestions: string[];
 }
 
+export type POSType = 'noun' | 'verb' | 'adjective' | 'adverb' | 'technical';
+
+export interface VocabularyItem {
+  id: string;
+  word: string;
+  pos: POSType;
+  definition: string;
+  dateAdded: string;
+  note?: string;
+  learned?: boolean;
+}
+
+export interface VocabularySettings {
+  highlightEnabled: boolean;
+  highlightPOS: POSType[];
+  includeUnknown: boolean;
+  autoAdd: boolean;
+}
+
+export const DEFAULT_VOCAB_SETTINGS: VocabularySettings = {
+  highlightEnabled: true,
+  highlightPOS: ['noun', 'verb', 'adjective', 'adverb', 'technical'],
+  includeUnknown: true,
+  autoAdd: false,
+};
+
 export interface UserProfile {
   email: string;
   passwordHash: string;
@@ -54,6 +80,8 @@ export interface UserProfile {
   preferences: Preferences | null;
   readingData: ReadingData;
   writingDraft: WritingDraft;
+  jar?: VocabularyItem[];
+  vocabSettings?: VocabularySettings;
 }
 
 export interface Session {
@@ -73,10 +101,14 @@ export interface PublicProfile {
   readingData: ReadingData;
   writingDraft: WritingDraft;
   passages: Passage[];
+  jar?: VocabularyItem[];
+  vocabSettings?: VocabularySettings;
 }
 
 export type ProfilePatch =
   | { action: 'updatePreferences'; preferences: Preferences | null }
   | { action: 'updateWriting'; writingDraft: WritingDraft }
   | { action: 'markRead' }
-  | { action: 'resetProgress' };
+  | { action: 'resetProgress' }
+  | { action: 'updateJar'; jar: VocabularyItem[] }
+  | { action: 'updateVocabSettings'; vocabSettings: VocabularySettings };
