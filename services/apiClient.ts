@@ -1,5 +1,12 @@
 import type { AuthPayload, AuthResponse, SignupPayload } from '@/types/api';
-import type { Preferences, ProfilePatch, PublicProfile, WritingDraft } from '@/types/domain';
+import type {
+  Preferences,
+  ProfilePatch,
+  PublicProfile,
+  VocabularyItem,
+  VocabularySettings,
+  WritingDraft,
+} from '@/types/domain';
 
 const PROFILE_ENDPOINT = '/api/me';
 const RETRY_MIN_DELAY_MS = 150;
@@ -229,6 +236,20 @@ export function updateWriting(
   signal?: AbortSignal,
 ): Promise<PublicProfile> {
   return patchProfile({ action: 'updateWriting', writingDraft }, signal);
+}
+
+export function updateJar(
+  jar: VocabularyItem[],
+  signal?: AbortSignal,
+): Promise<PublicProfile> {
+  return patchProfile({ action: 'updateJar', jar }, signal);
+}
+
+export function updateVocabSettings(
+  vocabSettings: VocabularySettings,
+  signal?: AbortSignal,
+): Promise<PublicProfile> {
+  return patchProfile({ action: 'updateVocabSettings', vocabSettings }, signal);
 }
 
 export function markRead(signal?: AbortSignal): Promise<PublicProfile> {

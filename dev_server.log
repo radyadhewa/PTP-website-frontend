@@ -1,0 +1,31 @@
+
+> ptp-website-frontend@0.1.0 dev
+> next dev
+
+   ▲ Next.js 15.5.19
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.0.2:3000
+
+ ✓ Starting...
+ ✓ Ready in 2.3s
+ ○ Compiling / ...
+ ✓ Compiled / in 5.8s (354 modules)
+ GET / 200 in 6348ms
+ ○ Compiling /api/me ...
+ ✓ Compiled /api/me in 541ms (192 modules)
+ GET /api/me 401 in 686ms
+ GET / 200 in 325ms
+ GET /api/me 401 in 8ms
+ GET / 200 in 224ms
+ GET /api/me 401 in 5ms
+ ✓ Compiled /api/auth/signup in 356ms (195 modules)
+ POST /api/auth/signup 201 in 471ms
+ ○ Compiling /homepage ...
+ ✓ Compiled /homepage in 904ms (429 modules)
+ GET /api/me 200 in 51ms
+ GET /api/me 200 in 18ms
+ GET / 200 in 309ms
+ GET /api/me 401 in 5ms
+ POST /api/auth/signup 201 in 90ms
+ GET /api/me 200 in 13ms
+ PATCH /api/me 200 in 35ms

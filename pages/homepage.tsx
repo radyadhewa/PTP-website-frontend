@@ -5,9 +5,16 @@ import Head from 'next/head';
 import styles from '@/styles/Home.module.css';
 import PreferenceForm from '@/components/PreferenceForm';
 import ReadingPassage from '@/components/ReadingPassage';
+import ReadingSettingsModal from '@/components/ReadingSettingsModal';
 import StreakCounter from '@/components/StreakCounter';
 import StudyNavigation from '@/components/StudyNavigation';
 import type { VisualizationModalProps } from '@/components/VisualizationModal';
+import {
+  loadLocalJar,
+  loadLocalVocabSettings,
+  saveLocalJar,
+  saveLocalVocabSettings,
+} from '@/lib/vocabulary';
 import {
   ApiError,
   errorMessage,
@@ -15,9 +22,12 @@ import {
   logout,
   markRead,
   reset,
+  updateJar,
   updatePreferences,
+  updateVocabSettings,
 } from '@/services/apiClient';
-import type { PublicProfile } from '@/types/domain';
+import type { PublicProfile, VocabularyItem, VocabularySettings } from '@/types/domain';
+import { DEFAULT_VOCAB_SETTINGS } from '@/types/domain';
 
 const VisualizationModal = dynamic<VisualizationModalProps>(
   () => import('@/components/VisualizationModal'),
@@ -37,7 +47,11 @@ export default function Home() {
   const router = useRouter();
   const [profile, setProfile] = useState<PublicProfile | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [showVocabSettingsModal, setShowVocabSettingsModal] = useState(false);
   const [passageIndex, setPassageIndex] = useState(0);
+
+  const [vocabSettings, setVocabSettings] = useState<VocabularySettings>(DEFAULT_VOCAB_SETTINGS);
+  const [jar, setJar] = useState<VocabularyItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
@@ -47,8 +61,12 @@ export default function Home() {
       try {
         const loadedProfile = await getProfile(signal);
         setProfile(loadedProfile);
+        setJar(loadedProfile.jar ?? loadLocalJar());
+        setVocabSettings(loadedProfile.vocabSettings ?? loadLocalVocabSettings());
         setError('');
       } catch (profileError) {
+        setJar(loadLocalJar());
+        setVocabSettings(loadLocalVocabSettings());
         if (profileError instanceof ApiError && profileError.aborted) return;
         if (profileError instanceof ApiError && profileError.status === 401) {
           await router.replace('/');
@@ -72,6 +90,53 @@ export default function Home() {
     setProfile(updatedProfile);
     setPassageIndex(0);
     setError('');
+  };
+
+  const handleSaveVocabSettings = async (newSettings: VocabularySettings): void => {
+    setVocabSettings(newSettings);
+    saveLocalVocabSettings(newSettings);
+    if (profile) {
+      try {
+        const updated = await updateVocabSettings(newSettings);
+        setProfile(updated);
+      } catch {
+        // Fallback to local state if offline
+      }
+    }
+  };
+
+  const handleAddToJar = async (item: Omit<VocabularyItem, 'id' | 'dateAdded' | 'learned'>): void => {
+    const newItem: VocabularyItem = {
+      ...item,
+      id: typeof window !== 'undefined' && window.crypto?.randomUUID ? window.crypto.randomUUID() : String(Date.now()),
+      dateAdded: new Date().toISOString(),
+      learned: false,
+    };
+    const updatedJar = [newItem, ...jar.filter((i) => i.word.toLowerCase() !== item.word.toLowerCase())];
+    setJar(updatedJar);
+    saveLocalJar(updatedJar);
+    if (profile) {
+      try {
+        const updated = await updateJar(updatedJar);
+        setProfile(updated);
+      } catch {
+        // Fallback to local state
+      }
+    }
+  };
+
+  const handleRemoveFromJar = async (word: string): void => {
+    const updatedJar = jar.filter((i) => i.word.toLowerCase() !== word.toLowerCase());
+    setJar(updatedJar);
+    saveLocalJar(updatedJar);
+    if (profile) {
+      try {
+        const updated = await updateJar(updatedJar);
+        setProfile(updated);
+      } catch {
+        // Fallback to local state
+      }
+    }
   };
 
   const handleReadComplete = async (): Promise<void> => {
@@ -253,6 +318,11 @@ export default function Home() {
                       onVisualize={() => setShowModal(true)}
                       onReadComplete={() => void handleReadComplete()}
                       isCompleting={pendingAction === 'read'}
+                      settings={vocabSettings}
+                      jar={jar}
+                      onAddToJar={(item) => void handleAddToJar(item)}
+                      onRemoveFromJar={(word) => void handleRemoveFromJar(word)}
+                      onOpenSettings={() => setShowVocabSettingsModal(true)}
                     />
                     <button
                       type="button"
@@ -343,6 +413,14 @@ export default function Home() {
           isOpen
           passage={currentPassage.text}
           onClose={() => setShowModal(false)}
+        />
+      )}
+
+      {showVocabSettingsModal && (
+        <ReadingSettingsModal
+          settings={vocabSettings}
+          onSave={(newSettings) => void handleSaveVocabSettings(newSettings)}
+          onClose={() => setShowVocabSettingsModal(false)}
         />
       )}
     </>

@@ -13,6 +13,8 @@ function sanitizeUser(user: UserProfile): PublicProfile {
     readingData: user.readingData,
     writingDraft: user.writingDraft,
     passages: filterPassagesByPreferences(user.preferences),
+    jar: user.jar,
+    vocabSettings: user.vocabSettings,
   };
 }
 
@@ -58,6 +60,10 @@ function applyPatch(user: UserProfile, patch: ProfilePatch): UserProfile {
       return { ...user, preferences: patch.preferences };
     case 'updateWriting':
       return { ...user, writingDraft: patch.writingDraft };
+    case 'updateJar':
+      return { ...user, jar: patch.jar };
+    case 'updateVocabSettings':
+      return { ...user, vocabSettings: patch.vocabSettings };
     case 'markRead': {
       const readingData = markRead(user.readingData);
       return readingData === user.readingData ? user : { ...user, readingData };

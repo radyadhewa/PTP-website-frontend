@@ -2,8 +2,11 @@ import {
   DIFFICULTIES,
   GENRES,
   PASSAGE_LENGTHS,
+  type POSType,
   type Preferences,
   type ProfilePatch,
+  type VocabularyItem,
+  type VocabularySettings,
   type WritingDraft,
 } from '@/types/domain';
 import type { AuthPayload, SignupPayload } from '@/types/api';
@@ -144,6 +147,55 @@ function parseWritingDraft(value: unknown): WritingDraft {
   };
 }
 
+const VALID_POS_TYPES: POSType[] = ['noun', 'verb', 'adjective', 'adverb', 'technical'];
+
+function parseVocabularyJar(value: unknown): VocabularyItem[] {
+  if (!Array.isArray(value)) {
+    throw new ApiError(400, 'Invalid jar format.');
+  }
+  return value.map((item) => {
+    if (!isRecord(item)) throw new ApiError(400, 'Invalid jar item.');
+    if (
+      typeof item.id !== 'string' ||
+      typeof item.word !== 'string' ||
+      typeof item.pos !== 'string' ||
+      !VALID_POS_TYPES.includes(item.pos as POSType) ||
+      typeof item.definition !== 'string' ||
+      typeof item.dateAdded !== 'string'
+    ) {
+      throw new ApiError(400, 'Invalid jar item properties.');
+    }
+    return {
+      id: item.id,
+      word: item.word,
+      pos: item.pos as POSType,
+      definition: item.definition,
+      dateAdded: item.dateAdded,
+      note: typeof item.note === 'string' ? item.note : undefined,
+      learned: typeof item.learned === 'boolean' ? item.learned : undefined,
+    };
+  });
+}
+
+function parseVocabularySettings(value: unknown): VocabularySettings {
+  if (!isRecord(value)) throw new ApiError(400, 'Invalid vocabulary settings.');
+  if (
+    typeof value.highlightEnabled !== 'boolean' ||
+    !Array.isArray(value.highlightPOS) ||
+    !value.highlightPOS.every((p) => typeof p === 'string' && VALID_POS_TYPES.includes(p as POSType)) ||
+    typeof value.includeUnknown !== 'boolean' ||
+    typeof value.autoAdd !== 'boolean'
+  ) {
+    throw new ApiError(400, 'Invalid vocabulary settings properties.');
+  }
+  return {
+    highlightEnabled: value.highlightEnabled,
+    highlightPOS: value.highlightPOS as POSType[],
+    includeUnknown: value.includeUnknown,
+    autoAdd: value.autoAdd,
+  };
+}
+
 export function parseProfilePatch(body: unknown): ProfilePatch {
   const value = parseBody(body);
   if (typeof value.action !== 'string') {
@@ -161,6 +213,16 @@ export function parseProfilePatch(body: unknown): ProfilePatch {
         throw new ApiError(400, 'Invalid updateWriting payload.');
       }
       return { action: value.action, writingDraft: parseWritingDraft(value.writingDraft) };
+    case 'updateJar':
+      if (!hasOnlyKeys(value, ['action', 'jar'])) {
+        throw new ApiError(400, 'Invalid updateJar payload.');
+      }
+      return { action: value.action, jar: parseVocabularyJar(value.jar) };
+    case 'updateVocabSettings':
+      if (!hasOnlyKeys(value, ['action', 'vocabSettings'])) {
+        throw new ApiError(400, 'Invalid updateVocabSettings payload.');
+      }
+      return { action: value.action, vocabSettings: parseVocabularySettings(value.vocabSettings) };
     case 'markRead':
     case 'resetProgress':
       if (!hasOnlyKeys(value, ['action'])) {

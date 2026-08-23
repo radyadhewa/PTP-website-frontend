@@ -74,6 +74,47 @@
         "body": "The problem runs in two directions. First, support for literacy is hard to come by. Only about 25% of fifteen year-olds in Indonesia reach a basic level of reading proficiency, down from 30% in 2018 (OECD, 2019, 2023). In 2025, the Education Minister stated it simply, roughly 75% of students can read, but they struggle to understand what they read (Tempo, 2025). Past the numbers are students who can decode words but cannot build an argument, verify a source, or structure their own writing, and who rarely receive help from tutors. Second, AI writing tools have increased. When misused, it’s easy to let the machine do the thinking while the students learn nothing.",
         "conclusion": "Prompt To Print is designed around that tension. The AI acts as a coach instead of generating finished work. When the user is stuck, it asks guiding questions rather than giving answers. When they submit a writing draft, it highlights weak points and flimsy arguments and asks them to revise independently along with suggestions. It will not make a story or paragraph for the user, but it’ll show where and why their work is unclear and give ideas to progress forward. \n"
       }
+    },
+    {
+      "email": "vocab_test_user@example.com",
+      "passwordHash": "scrypt$16384$8$1$de680477525c715bb991dc9ccc18eff7$edcca0245ca41db06e4b91369aa52fb65f0c82ea9aba93e409561370252b03d5e10fd989a18ebe3b544800964c4b7a0cf18e8bddf26742d5aaa22c34865688fb",
+      "createdAt": "2026-08-23T13:43:47.028Z",
+      "preferences": null,
+      "readingData": {
+        "currentStreak": 0,
+        "bestStreak": 0,
+        "totalBooksRead": 0,
+        "lastReadDate": null
+      },
+      "writingDraft": {
+        "introduction": "",
+        "body": "",
+        "conclusion": ""
+      }
+    },
+    {
+      "email": "vocab_test_user2@example.com",
+      "passwordHash": "scrypt$16384$8$1$2740f8bf8f1d607cb9bc619b9c2d8dd3$f9527e3052765ba9532e73f1193b3e5d5ee8ef4727129d47a1d6c371230054ba8b4b6fdbf62b93f94fa345d431152ceca9bb7829464a843aea65b245abd06d44",
+      "createdAt": "2026-08-23T13:44:18.999Z",
+      "preferences": {
+        "genres": [
+          "Science & Technology"
+        ],
+        "difficulty": "Intermediate",
+        "passageLength": "medium",
+        "completedAt": "2026-08-23T13:44:21.020Z"
+      },
+      "readingData": {
+        "currentStreak": 0,
+        "bestStreak": 0,
+        "totalBooksRead": 0,
+        "lastReadDate": null
+      },
+      "writingDraft": {
+        "introduction": "",
+        "body": "",
+        "conclusion": ""
+      }
     }
   ],
   "sessions": {
@@ -84,6 +125,16 @@
     "cb4fba49-9e76-47f1-a959-8707fa733d9e": {
       "email": "test@gmail.com",
       "createdAt": "2026-07-24T09:47:43.232Z"
+    },
+    "sha256:8aeb9241b6c0a2187a036651983c19c2e4389d810191573620a5a9ba8728d7b9": {
+      "email": "vocab_test_user@example.com",
+      "createdAt": "2026-08-23T13:43:47.034Z",
+      "expiresAt": "2026-08-30T13:43:47.034Z"
+    },
+    "sha256:66c1d17be9a9c8e638376dc6df325c459c5faadbddc0d0530721953d10fc858d": {
+      "email": "vocab_test_user2@example.com",
+      "createdAt": "2026-08-23T13:44:19.009Z",
+      "expiresAt": "2026-08-30T13:44:19.009Z"
     }
   }
 }
