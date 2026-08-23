@@ -15,7 +15,10 @@ interface StoredAppStore {
   sessions: Record<string, StoredSession>;
 }
 
-const dataDir = path.join(process.cwd(), 'data');
+const isVercel = Boolean(process.env.VERCEL || process.env.NEXT_PUBLIC_VERCEL_ENV);
+const rootDataDir = path.join(process.cwd(), 'data');
+const seedDataFile = path.join(rootDataDir, 'app-data.json');
+const dataDir = isVercel ? '/tmp/ptp-data' : rootDataDir;
 const dataFile = path.join(dataDir, 'app-data.json');
 const SESSION_KEY_PREFIX = 'sha256:';
 const SESSION_LIFETIME_MS = 7 * 24 * 60 * 60 * 1_000;
@@ -144,7 +147,16 @@ async function ensureStoreExists(): Promise<void> {
   }
 
   if (!initializationPromise) {
-    initializationPromise = writeStoreAtomically(emptyStore());
+    initializationPromise = (async () => {
+      let initialStore = emptyStore();
+      try {
+        const rawSeed = await readFile(seedDataFile, 'utf8');
+        initialStore = parseStore(rawSeed);
+      } catch {
+        initialStore = emptyStore();
+      }
+      await writeStoreAtomically(initialStore);
+    })();
   }
   await initializationPromise;
 }

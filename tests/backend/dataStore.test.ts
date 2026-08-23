@@ -67,6 +67,25 @@ describe('data store initialization and users', () => {
     });
   });
 
+  it('initializes with seed data when VERCEL environment is set', async () => {
+    process.env.VERCEL = '1';
+    await mkdir(path.dirname(dataFile()), { recursive: true });
+    await writeFile(
+      dataFile(),
+      JSON.stringify({
+        users: [user('seed@example.com')],
+        sessions: {},
+      }),
+      'utf8',
+    );
+
+    const store = await importDataStore();
+    await expect(store.findUserByEmail('seed@example.com')).resolves.toMatchObject({
+      email: 'seed@example.com',
+    });
+    delete process.env.VERCEL;
+  });
+
   it('creates, finds, rejects duplicate, updates, and misses users', async () => {
     const store = await importDataStore();
     const original = user('reader@example.com');
