@@ -22,10 +22,27 @@ export interface Preferences {
 }
 
 export interface Passage {
+  id?: string;
+  title?: string;
+  author?: string;
   text: string;
   genre: Genre;
   difficulty: Difficulty;
   length: PassageLength;
+  summary?: string;
+  isCurated?: boolean;
+}
+
+export interface CuratedBook {
+  id: string;
+  title: string;
+  author: string;
+  text: string;
+  genre: Genre;
+  difficulty: Difficulty;
+  length: PassageLength;
+  summary?: string;
+  createdAt: string;
 }
 
 export interface ReadingData {
@@ -65,6 +82,7 @@ export interface Session {
 export interface AppStore {
   users: UserProfile[];
   sessions: Record<string, Session>;
+  curatedBooks?: CuratedBook[];
 }
 
 export interface PublicProfile {

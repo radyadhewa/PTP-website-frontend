@@ -2,11 +2,15 @@ import {
   DIFFICULTIES,
   GENRES,
   PASSAGE_LENGTHS,
+  type CuratedBook,
+  type Difficulty,
+  type Genre,
+  type PassageLength,
   type Preferences,
   type ProfilePatch,
   type WritingDraft,
 } from '@/types/domain';
-import type { AuthPayload, SignupPayload } from '@/types/api';
+import type { AdminLoginPayload, AuthPayload, CuratedBookInput, SignupPayload } from '@/types/api';
 import { ApiError } from '@/lib/api';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -58,6 +62,66 @@ export function parseAuthPayload(body: unknown): AuthPayload {
   return {
     email: parseEmail(value.email),
     password: parseLoginPassword(value.password),
+  };
+}
+
+export function parseAdminLoginPayload(body: unknown): AdminLoginPayload {
+  const value = parseBody(body);
+  if (!hasOnlyKeys(value, ['username', 'password'])) {
+    throw new ApiError(400, 'Invalid admin login payload.');
+  }
+  if (typeof value.username !== 'string' || !value.username.trim()) {
+    throw new ApiError(400, 'Admin username is required.');
+  }
+  if (typeof value.password !== 'string' || !value.password) {
+    throw new ApiError(400, 'Admin password is required.');
+  }
+  return {
+    username: value.username.trim(),
+    password: value.password,
+  };
+}
+
+export function parseCuratedBookInput(body: unknown): Omit<CuratedBook, 'id' | 'createdAt'> {
+  const value = parseBody(body);
+  const validKeys = ['title', 'author', 'text', 'genre', 'difficulty', 'length', 'summary'];
+  if (!Object.keys(value).every((k) => validKeys.includes(k))) {
+    throw new ApiError(400, 'Invalid curated book payload.');
+  }
+
+  if (typeof value.title !== 'string' || !value.title.trim()) {
+    throw new ApiError(400, 'Book title is required.');
+  }
+  if (typeof value.author !== 'string' || !value.author.trim()) {
+    throw new ApiError(400, 'Book author is required.');
+  }
+  if (typeof value.text !== 'string' || !value.text.trim()) {
+    throw new ApiError(400, 'Book text is required.');
+  }
+  if (typeof value.genre !== 'string' || !GENRES.includes(value.genre as Genre)) {
+    throw new ApiError(400, 'Invalid book genre.');
+  }
+  if (typeof value.difficulty !== 'string' || !DIFFICULTIES.includes(value.difficulty as Difficulty)) {
+    throw new ApiError(400, 'Invalid book difficulty.');
+  }
+  if (
+    typeof value.length !== 'string' ||
+    !PASSAGE_LENGTHS.includes(value.length as PassageLength)
+  ) {
+    throw new ApiError(400, 'Invalid book passage length.');
+  }
+  if (value.summary !== undefined && typeof value.summary !== 'string') {
+    throw new ApiError(400, 'Invalid book summary.');
+  }
+
+  return {
+    title: value.title.trim(),
+    author: value.author.trim(),
+    text: value.text.trim(),
+    genre: value.genre as Genre,
+    difficulty: value.difficulty as Difficulty,
+    length: value.length as PassageLength,
+    summary: typeof value.summary === 'string' ? value.summary.trim() : undefined,
   };
 }
 

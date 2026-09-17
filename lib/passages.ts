@@ -1,4 +1,4 @@
-import type { Passage, Preferences } from '@/types/domain';
+import type { CuratedBook, Passage, Preferences } from '@/types/domain';
 
 export const SAMPLE_PASSAGES: Passage[] = [
   {
@@ -51,12 +51,29 @@ export const SAMPLE_PASSAGES: Passage[] = [
   },
 ];
 
-export function filterPassagesByPreferences(preferences: Preferences | null): Passage[] {
+export function filterPassagesByPreferences(
+  preferences: Preferences | null,
+  curatedBooks: CuratedBook[] = [],
+): Passage[] {
+  const curatedPassages: Passage[] = curatedBooks.map((book) => ({
+    id: book.id,
+    title: book.title,
+    author: book.author,
+    text: book.text,
+    genre: book.genre,
+    difficulty: book.difficulty,
+    length: book.length,
+    summary: book.summary,
+    isCurated: true,
+  }));
+
+  const allPassages = [...curatedPassages, ...SAMPLE_PASSAGES];
+
   if (!preferences) {
-    return SAMPLE_PASSAGES;
+    return allPassages;
   }
 
-  const filtered = SAMPLE_PASSAGES.filter(
+  const filtered = allPassages.filter(
     (passage) =>
       preferences.genres.includes(passage.genre) &&
       passage.difficulty === preferences.difficulty &&
@@ -66,9 +83,9 @@ export function filterPassagesByPreferences(preferences: Preferences | null): Pa
     return filtered;
   }
 
-  const partialFiltered = SAMPLE_PASSAGES.filter(
+  const partialFiltered = allPassages.filter(
     (passage) =>
       preferences.genres.includes(passage.genre) && passage.difficulty === preferences.difficulty,
   );
-  return partialFiltered.length > 0 ? partialFiltered : SAMPLE_PASSAGES;
+  return partialFiltered.length > 0 ? partialFiltered : allPassages;
 }
