@@ -5,6 +5,7 @@ import adminLoginHandler from '@/pages/api/admin/login';
 import adminLogoutHandler from '@/pages/api/admin/logout';
 import adminMeHandler from '@/pages/api/admin/me';
 import adminBooksHandler from '@/pages/api/admin/books';
+import parsePdfHandler from '@/pages/api/admin/parse-pdf';
 import * as dataStore from '@/lib/dataStore';
 import * as session from '@/lib/session';
 
@@ -153,5 +154,27 @@ describe('Admin Curated Books Endpoints', () => {
 
     expect(res.statusCode).toBe(200);
     expect(res._getJSONData()).toEqual({ ok: true });
+  });
+
+  describe('Admin PDF Parsing Endpoint', () => {
+    it('rejects unauthorized requests with 401', async () => {
+      vi.spyOn(session, 'getAuthenticatedAdmin').mockResolvedValue(null);
+      const { req, res } = mocks('POST');
+      req.body = { fileBase64: 'test' };
+
+      await parsePdfHandler(req, res);
+
+      expect(res.statusCode).toBe(401);
+    });
+
+    it('rejects missing fileBase64 payload with 400', async () => {
+      vi.spyOn(session, 'getAuthenticatedAdmin').mockResolvedValue({ username: 'admin' });
+      const { req, res } = mocks('POST');
+      req.body = {};
+
+      await parsePdfHandler(req, res);
+
+      expect(res.statusCode).toBe(400);
+    });
   });
 });
