@@ -64,6 +64,7 @@ describe('data store initialization and users', () => {
     await expect(readFile(dataFile(), 'utf8').then(JSON.parse)).resolves.toEqual({
       users: [],
       sessions: {},
+      curatedBooks: [],
     });
   });
 
@@ -223,6 +224,7 @@ describe('data store sessions', () => {
     await expect(readFile(dataFile(), 'utf8').then(JSON.parse)).resolves.toEqual({
       users: [],
       sessions: {},
+      curatedBooks: [],
     });
   });
 
@@ -241,6 +243,40 @@ describe('data store sessions', () => {
 
     await store.deleteSession(token);
     expect(JSON.parse(await readFile(dataFile(), 'utf8')).sessions).toEqual({});
+  });
+});
+
+describe('data store curated books', () => {
+  it('adds, gets, and deletes curated books', async () => {
+    const store = await importDataStore();
+
+    await expect(store.getCuratedBooks()).resolves.toEqual([]);
+
+    const newBook = await store.addCuratedBook({
+      title: 'Curated Test Book',
+      author: 'Test Author',
+      text: 'Sample passage text for test.',
+      genre: 'Science & Technology',
+      difficulty: 'Intermediate',
+      length: 'medium',
+      summary: 'Test summary',
+    });
+
+    expect(newBook.id).toBeDefined();
+    expect(newBook.title).toBe('Curated Test Book');
+
+    const books = await store.getCuratedBooks();
+    expect(books).toHaveLength(1);
+    expect(books[0].title).toBe('Curated Test Book');
+
+    const deleted = await store.deleteCuratedBook(newBook.id);
+    expect(deleted).toBe(true);
+
+    const booksAfterDelete = await store.getCuratedBooks();
+    expect(booksAfterDelete).toHaveLength(0);
+
+    const deleteNonExistent = await store.deleteCuratedBook(newBook.id);
+    expect(deleteNonExistent).toBe(false);
   });
 });
 

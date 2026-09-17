@@ -84,6 +84,40 @@
     "cb4fba49-9e76-47f1-a959-8707fa733d9e": {
       "email": "test@gmail.com",
       "createdAt": "2026-07-24T09:47:43.232Z"
+    },
+    "sha256:589e57f7d7bb0f2b019632f648c246f7370d320b684e43da85f7a846b5ba6bea": {
+      "email": "admin:admin",
+      "createdAt": "2026-08-30T10:19:51.731Z",
+      "expiresAt": "2026-09-06T10:19:51.731Z"
+    },
+    "sha256:ba9774260bca5b46b014b1daf809ad2e6db30128f3eb6b0f40f0ae333715f19b": {
+      "email": "admin:admin",
+      "createdAt": "2026-08-30T10:21:20.182Z",
+      "expiresAt": "2026-09-06T10:21:20.182Z"
     }
-  }
+  },
+  "curatedBooks": [
+    {
+      "title": "The Art of Learning",
+      "author": "Josh Waitzkin",
+      "text": "Growth comes at the point of resistance. We must learn to push past our perceived limits to uncover new cognitive potential.",
+      "genre": "Self-Improvement",
+      "difficulty": "Intermediate",
+      "length": "medium",
+      "summary": "Mastery requires embracing discomfort and focusing on incremental growth.",
+      "id": "e04bb616-b23a-47f9-832a-02e91871e0c1",
+      "createdAt": "2026-08-30T10:19:56.379Z"
+    },
+    {
+      "title": "The Art of Learning",
+      "author": "Josh Waitzkin",
+      "text": "Growth comes at the point of resistance. We must learn to push past our perceived limits to uncover new cognitive potential.",
+      "genre": "Self-Improvement",
+      "difficulty": "Intermediate",
+      "length": "medium",
+      "summary": "Mastery requires embracing discomfort and focusing on incremental growth.",
+      "id": "ff657cd1-4a3b-4cc8-9e51-e95f85a40306",
+      "createdAt": "2026-08-30T10:21:24.937Z"
+    }
+  ]
 }

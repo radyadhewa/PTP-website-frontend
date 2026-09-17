@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from 'crypto';
 import { mkdir, readFile, rename, unlink, writeFile } from 'fs/promises';
 import path from 'path';
-import type { Session, UserProfile } from '@/types/domain';
+import type { CuratedBook, Session, UserProfile } from '@/types/domain';
 import { DIFFICULTIES, GENRES, PASSAGE_LENGTHS } from '@/types/domain';
 
 interface StoredSession {
@@ -13,6 +13,7 @@ interface StoredSession {
 interface StoredAppStore {
   users: UserProfile[];
   sessions: Record<string, StoredSession>;
+  curatedBooks?: CuratedBook[];
 }
 
 const isVercel = Boolean(process.env.VERCEL || process.env.NEXT_PUBLIC_VERCEL_ENV);
@@ -27,7 +28,7 @@ let mutationQueue: Promise<void> = Promise.resolve();
 let initializationPromise: Promise<void> | null = null;
 
 function emptyStore(): StoredAppStore {
-  return { users: [], sessions: {} };
+  return { users: [], sessions: {}, curatedBooks: [] };
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -103,19 +104,44 @@ function isValidSessions(value: unknown): value is Record<string, StoredSession>
   );
 }
 
+function isValidCuratedBook(value: unknown): value is CuratedBook {
+  return (
+    isRecord(value) &&
+    typeof value.id === 'string' &&
+    value.id.length > 0 &&
+    typeof value.title === 'string' &&
+    value.title.length > 0 &&
+    typeof value.author === 'string' &&
+    value.author.length > 0 &&
+    typeof value.text === 'string' &&
+    value.text.length > 0 &&
+    typeof value.genre === 'string' &&
+    GENRES.includes(value.genre as (typeof GENRES)[number]) &&
+    typeof value.difficulty === 'string' &&
+    DIFFICULTIES.includes(value.difficulty as (typeof DIFFICULTIES)[number]) &&
+    typeof value.length === 'string' &&
+    PASSAGE_LENGTHS.includes(value.length as (typeof PASSAGE_LENGTHS)[number]) &&
+    (value.summary === undefined || typeof value.summary === 'string') &&
+    isValidDateString(value.createdAt)
+  );
+}
+
 function parseStore(raw: string): StoredAppStore {
   const value: unknown = JSON.parse(raw);
   if (
     !isRecord(value) ||
     !Array.isArray(value.users) ||
     !value.users.every(isValidUser) ||
-    !isValidSessions(value.sessions)
+    !isValidSessions(value.sessions) ||
+    (value.curatedBooks !== undefined &&
+      (!Array.isArray(value.curatedBooks) || !value.curatedBooks.every(isValidCuratedBook)))
   ) {
     throw new Error('The application data store has an invalid shape.');
   }
   return {
     users: value.users,
     sessions: value.sessions,
+    curatedBooks: value.curatedBooks ?? [],
   };
 }
 
@@ -280,5 +306,43 @@ export function deleteSession(token: string): Promise<void> {
     if (changed) {
       await writeStoreAtomically(store);
     }
+  });
+}
+
+export async function getCuratedBooks(): Promise<CuratedBook[]> {
+  const store = await readAfterMutations();
+  return store.curatedBooks ?? [];
+}
+
+export function addCuratedBook(bookData: Omit<CuratedBook, 'id' | 'createdAt'>): Promise<CuratedBook> {
+  return enqueueMutation(async () => {
+    const store = await readStoreFromDisk();
+    if (!store.curatedBooks) {
+      store.curatedBooks = [];
+    }
+    const newBook: CuratedBook = {
+      ...bookData,
+      id: randomUUID(),
+      createdAt: new Date().toISOString(),
+    };
+    store.curatedBooks.push(newBook);
+    await writeStoreAtomically(store);
+    return newBook;
+  });
+}
+
+export function deleteCuratedBook(id: string): Promise<boolean> {
+  return enqueueMutation(async () => {
+    const store = await readStoreFromDisk();
+    if (!store.curatedBooks) {
+      return false;
+    }
+    const initialLength = store.curatedBooks.length;
+    store.curatedBooks = store.curatedBooks.filter((book) => book.id !== id);
+    if (store.curatedBooks.length !== initialLength) {
+      await writeStoreAtomically(store);
+      return true;
+    }
+    return false;
   });
 }

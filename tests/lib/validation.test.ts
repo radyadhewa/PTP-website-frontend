@@ -1,11 +1,69 @@
 import { describe, expect, it } from 'vitest';
 import { ApiError } from '@/lib/api';
-import { parseAuthPayload, parseProfilePatch, parseSignupPayload } from '@/lib/validation';
+import {
+  parseAdminLoginPayload,
+  parseAuthPayload,
+  parseCuratedBookInput,
+  parseProfilePatch,
+  parseSignupPayload,
+} from '@/lib/validation';
 
 function expectApiError(callback: () => unknown, message: string): void {
   expect(callback).toThrowError(ApiError);
   expect(callback).toThrow(message);
 }
+
+describe('admin payload validation', () => {
+  it('parses valid admin login payload', () => {
+    expect(parseAdminLoginPayload({ username: ' admin ', password: 'adminpassword' })).toEqual({
+      username: 'admin',
+      password: 'adminpassword',
+    });
+  });
+
+  it('rejects invalid admin login shapes', () => {
+    expectApiError(
+      () => parseAdminLoginPayload({ username: '', password: 'password' }),
+      'Admin username is required.',
+    );
+    expectApiError(
+      () => parseAdminLoginPayload({ username: 'admin', password: '' }),
+      'Admin password is required.',
+    );
+  });
+
+  it('parses valid curated book input', () => {
+    const validBook = {
+      title: ' Test Title ',
+      author: ' Test Author ',
+      text: ' Sample book passage text. ',
+      genre: 'Science & Technology',
+      difficulty: 'Intermediate',
+      length: 'medium',
+      summary: ' Summary note ',
+    };
+    expect(parseCuratedBookInput(validBook)).toEqual({
+      title: 'Test Title',
+      author: 'Test Author',
+      text: 'Sample book passage text.',
+      genre: 'Science & Technology',
+      difficulty: 'Intermediate',
+      length: 'medium',
+      summary: 'Summary note',
+    });
+  });
+
+  it('rejects invalid curated book inputs', () => {
+    expectApiError(
+      () => parseCuratedBookInput({ title: '', author: 'A', text: 'T', genre: 'Science & Technology', difficulty: 'Beginner', length: 'short' }),
+      'Book title is required.',
+    );
+    expectApiError(
+      () => parseCuratedBookInput({ title: 'T', author: 'A', text: 'T', genre: 'Invalid Genre', difficulty: 'Beginner', length: 'short' }),
+      'Invalid book genre.',
+    );
+  });
+});
 
 describe('authentication payload validation', () => {
   it('normalizes valid login emails while preserving the password', () => {

@@ -4,6 +4,7 @@ import type { UserProfile } from '@/types/domain';
 import { createSession, deleteSession, findUserByEmail, getSession } from '@/lib/dataStore';
 
 const SESSION_COOKIE_NAME = 'reading_session';
+const ADMIN_SESSION_COOKIE_NAME = 'admin_session';
 export const SESSION_MAX_AGE_SECONDS = 7 * 24 * 60 * 60;
 
 function getCookie(cookieHeader: string | undefined, name: string): string | null {
@@ -68,4 +69,41 @@ export async function getAuthenticatedUser(req: NextApiRequest): Promise<UserPro
     return null;
   }
   return findUserByEmail(session.email);
+}
+
+export function getAdminSessionToken(req: NextApiRequest): string | null {
+  const token = getCookie(req.headers.cookie, ADMIN_SESSION_COOKIE_NAME);
+  return token && token.length <= 256 ? token : null;
+}
+
+export async function startAdminSession(username: string, res: NextApiResponse): Promise<void> {
+  const token = randomBytes(32).toString('base64url');
+  await createSession(token, `admin:${username}`);
+  res.setHeader(
+    'Set-Cookie',
+    `${ADMIN_SESSION_COOKIE_NAME}=${encodeURIComponent(token)}; ${cookieAttributes()}; Max-Age=${SESSION_MAX_AGE_SECONDS}`,
+  );
+}
+
+export async function endAdminSession(req: NextApiRequest, res: NextApiResponse): Promise<void> {
+  const token = getAdminSessionToken(req);
+  if (token) {
+    await deleteSession(token);
+  }
+  res.setHeader(
+    'Set-Cookie',
+    `${ADMIN_SESSION_COOKIE_NAME}=; ${cookieAttributes()}; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT`,
+  );
+}
+
+export async function getAuthenticatedAdmin(req: NextApiRequest): Promise<{ username: string } | null> {
+  const token = getAdminSessionToken(req);
+  if (!token) {
+    return null;
+  }
+  const session = await getSession(token);
+  if (!session || !session.email.startsWith('admin:')) {
+    return null;
+  }
+  return { username: session.email.slice(6) };
 }

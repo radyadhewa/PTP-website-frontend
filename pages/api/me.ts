@@ -1,18 +1,19 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import type { ProfilePatch, PublicProfile, ReadingData, UserProfile } from '@/types/domain';
 import { ApiError, assertMethod, withApiHandler } from '@/lib/api';
-import { updateUser } from '@/lib/dataStore';
+import { getCuratedBooks, updateUser } from '@/lib/dataStore';
 import { filterPassagesByPreferences } from '@/lib/passages';
 import { getAuthenticatedUser } from '@/lib/session';
 import { parseProfilePatch } from '@/lib/validation';
 
-function sanitizeUser(user: UserProfile): PublicProfile {
+async function sanitizeUser(user: UserProfile): Promise<PublicProfile> {
+  const curatedBooks = await getCuratedBooks();
   return {
     email: user.email,
     preferences: user.preferences,
     readingData: user.readingData,
     writingDraft: user.writingDraft,
-    passages: filterPassagesByPreferences(user.preferences),
+    passages: filterPassagesByPreferences(user.preferences, curatedBooks),
   };
 }
 
@@ -84,7 +85,7 @@ async function meHandler(req: NextApiRequest, res: NextApiResponse<PublicProfile
   }
 
   if (!patch) {
-    res.status(200).json(sanitizeUser(user));
+    res.status(200).json(await sanitizeUser(user));
     return;
   }
 
@@ -92,7 +93,7 @@ async function meHandler(req: NextApiRequest, res: NextApiResponse<PublicProfile
   if (!updatedUser) {
     throw new ApiError(401, 'Unauthorized.');
   }
-  res.status(200).json(sanitizeUser(updatedUser));
+  res.status(200).json(await sanitizeUser(updatedUser));
 }
 
 export default withApiHandler(meHandler);

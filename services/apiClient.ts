@@ -1,5 +1,5 @@
-import type { AuthPayload, AuthResponse, SignupPayload } from '@/types/api';
-import type { Preferences, ProfilePatch, PublicProfile, WritingDraft } from '@/types/domain';
+import type { AdminAuthResponse, AdminLoginPayload, AuthPayload, AuthResponse, CuratedBookInput, SignupPayload } from '@/types/api';
+import type { CuratedBook, Preferences, ProfilePatch, PublicProfile, WritingDraft } from '@/types/domain';
 
 const PROFILE_ENDPOINT = '/api/me';
 const RETRY_MIN_DELAY_MS = 150;
@@ -241,6 +241,53 @@ export function reset(signal?: AbortSignal): Promise<PublicProfile> {
 
 export async function logout(signal?: AbortSignal): Promise<void> {
   await request<unknown>('/api/auth/logout', { method: 'POST', signal });
+}
+
+export async function adminLogin(
+  payload: AdminLoginPayload,
+  signal?: AbortSignal,
+): Promise<AdminAuthResponse> {
+  return request<AdminAuthResponse>('/api/admin/login', {
+    method: 'POST',
+    body: payload,
+    signal,
+  });
+}
+
+export async function getAdminSession(signal?: AbortSignal): Promise<AdminAuthResponse> {
+  return request<AdminAuthResponse>('/api/admin/me', {
+    method: 'GET',
+    signal,
+  });
+}
+
+export async function adminLogout(signal?: AbortSignal): Promise<void> {
+  await request<unknown>('/api/admin/logout', { method: 'POST', signal });
+}
+
+export async function getAdminBooks(signal?: AbortSignal): Promise<CuratedBook[]> {
+  return request<CuratedBook[]>('/api/admin/books', {
+    method: 'GET',
+    signal,
+  });
+}
+
+export async function addCuratedBook(
+  payload: CuratedBookInput,
+  signal?: AbortSignal,
+): Promise<CuratedBook> {
+  return request<CuratedBook>('/api/admin/books', {
+    method: 'POST',
+    body: payload,
+    signal,
+  });
+}
+
+export async function deleteCuratedBook(id: string, signal?: AbortSignal): Promise<void> {
+  await request<unknown>(`/api/admin/books?id=${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+    signal,
+  });
 }
 
 export function errorMessage(error: unknown, fallback: string): string {
