@@ -5,6 +5,7 @@ export const GENRES = [
   'Self-Improvement',
   'Fiction & Literature',
   'Health & Wellness',
+  'Others'
 ] as const;
 
 export const DIFFICULTIES = ['Beginner', 'Intermediate', 'Advanced'] as const;
