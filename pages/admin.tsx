@@ -9,6 +9,7 @@ import {
   deleteCuratedBook,
   getAdminBooks,
   getAdminSession,
+  parsePdfToText,
   errorMessage,
 } from '@/services/apiClient';
 import { DIFFICULTIES, GENRES, PASSAGE_LENGTHS, type CuratedBook, type Difficulty, type Genre, type PassageLength } from '@/types/domain';
@@ -33,6 +34,32 @@ export default function AdminPage() {
   const [length, setLength] = useState<PassageLength>(PASSAGE_LENGTHS[0]);
   const [text, setText] = useState('');
   const [summary, setSummary] = useState('');
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const [pdfFileName, setPdfFileName] = useState('');
+  const [expandedIds, setExpandedIds] = useState<Record<string, boolean>>({});
+
+  const toggleExpand = (id: string) => {
+    setExpandedIds((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setError('');
+    setPdfLoading(true);
+    try {
+      const extractedText = await parsePdfToText(file);
+      setText(extractedText);
+      setPdfFileName(file.name);
+      setSuccessMsg(`Extracted text from "${file.name}". You can review or edit below.`);
+    } catch (err) {
+      setError(errorMessage(err, 'Failed to extract text from PDF.'));
+    } finally {
+      setPdfLoading(false);
+      e.target.value = '';
+    }
+  };
 
   const checkAdminSession = useCallback(async (signal?: AbortSignal) => {
     try {
@@ -114,6 +141,7 @@ export default function AdminPage() {
       setAuthor('');
       setText('');
       setSummary('');
+      setPdfFileName('');
     } catch (addErr) {
       setError(errorMessage(addErr, 'Failed to add curated book.'));
     } finally {
@@ -235,7 +263,7 @@ export default function AdminPage() {
               <div
                 style={{
                   display: 'flex',
-                  justify: 'space-between',
+                  justifyContent: 'space-between',
                   alignItems: 'center',
                   marginBottom: '24px',
                   padding: '12px 20px',
@@ -359,18 +387,51 @@ export default function AdminPage() {
                   </div>
 
                   <div className={styles.formGroup}>
-                    <label htmlFor="bookText" className={styles.formLabel}>
-                      Passage Text
-                    </label>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
+                      <label htmlFor="bookText" className={styles.formLabel} style={{ marginBottom: 0 }}>
+                        Passage Text
+                      </label>
+                      <label
+                        htmlFor="pdfUpload"
+                        style={{
+                          fontSize: '0.85rem',
+                          padding: '6px 12px',
+                          borderRadius: '8px',
+                          border: '1px solid rgba(23, 51, 45, 0.2)',
+                          background: pdfLoading ? '#e2e8f0' : '#fff',
+                          color: '#17332d',
+                          cursor: pdfLoading || submitting ? 'not-allowed' : 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          fontWeight: 500,
+                        }}
+                      >
+                        📄 {pdfLoading ? 'Extracting text…' : 'Upload PDF'}
+                      </label>
+                      <input
+                        id="pdfUpload"
+                        type="file"
+                        accept="application/pdf"
+                        style={{ display: 'none' }}
+                        onChange={handlePdfUpload}
+                        disabled={submitting || pdfLoading}
+                      />
+                    </div>
+                    {pdfFileName && (
+                      <p className={styles.helpText} style={{ marginBottom: '8px', color: '#1d4f40', fontWeight: 600 }}>
+                        ✓ Extracted from: {pdfFileName}
+                      </p>
+                    )}
                     <textarea
                       id="bookText"
                       value={text}
                       onChange={(e) => setText(e.target.value)}
                       className={styles.fieldTextarea}
                       rows={6}
-                      placeholder="Enter the passage content..."
+                      placeholder="Enter the passage content directly or upload a PDF above..."
                       required
-                      disabled={submitting}
+                      disabled={submitting || pdfLoading}
                     />
                   </div>
 
@@ -418,7 +479,7 @@ export default function AdminPage() {
                         <div
                           style={{
                             display: 'flex',
-                            justify: 'space-between',
+                            justifyContent: 'space-between',
                             alignItems: 'flex-start',
                           }}
                         >
@@ -440,9 +501,55 @@ export default function AdminPage() {
                           </button>
                         </div>
 
-                        <p style={{ fontSize: '0.95rem', lineHeight: '1.5', marginBottom: '12px' }}>
-                          &ldquo;{book.text}&rdquo;
-                        </p>
+                        {(() => {
+                          const isExpanded = !!expandedIds[book.id];
+                          const isLong = book.text.length > 200;
+                          const displayText =
+                            isLong && !isExpanded ? `${book.text.slice(0, 200)}…` : book.text;
+
+                          return (
+                            <div style={{ marginBottom: '12px' }}>
+                              <p
+                                style={{
+                                  fontSize: '0.95rem',
+                                  lineHeight: '1.5',
+                                  margin: '0 0 4px 0',
+                                  whiteSpace: 'pre-wrap',
+                                  ...(isExpanded && isLong
+                                    ? {
+                                        maxHeight: '320px',
+                                        overflowY: 'auto',
+                                        background: 'rgba(0, 0, 0, 0.02)',
+                                        padding: '10px 14px',
+                                        borderRadius: '8px',
+                                        border: '1px solid rgba(0, 0, 0, 0.06)',
+                                      }
+                                    : {}),
+                                }}
+                              >
+                                &ldquo;{displayText}&rdquo;
+                              </p>
+                              {isLong && (
+                                <button
+                                  type="button"
+                                  onClick={() => toggleExpand(book.id)}
+                                  style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    padding: '2px 0',
+                                    color: '#235a4d',
+                                    fontSize: '0.85rem',
+                                    fontWeight: 600,
+                                    cursor: 'pointer',
+                                    textDecoration: 'underline',
+                                  }}
+                                >
+                                  {isExpanded ? '▴ Collapse passage' : '▾ Show full passage'}
+                                </button>
+                              )}
+                            </div>
+                          );
+                        })()}
 
                         {book.summary && (
                           <div

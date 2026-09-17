@@ -290,6 +290,22 @@ export async function deleteCuratedBook(id: string, signal?: AbortSignal): Promi
   });
 }
 
+export async function parsePdfToText(file: File, signal?: AbortSignal): Promise<string> {
+  const base64 = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(new Error('Failed to read PDF file.'));
+    reader.readAsDataURL(file);
+  });
+
+  const res = await request<{ text: string }>('/api/admin/parse-pdf', {
+    method: 'POST',
+    body: { fileBase64: base64 },
+    signal,
+  });
+  return res.text;
+}
+
 export function errorMessage(error: unknown, fallback: string): string {
   return error instanceof ApiError ? error.message : fallback;
 }
